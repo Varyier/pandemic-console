@@ -1,8 +1,13 @@
 <div class="row">
+    <textarea class="form-control" rows="40" id="allOutput" disabled></textarea>
+</div>
+<div class="row">
     <div class="input-append">
-        <textarea class="form-control" rows="40" id="allOutput" disabled></textarea>
         <input class="span2" id="mainInput" type="text">
-        <button class="btn" type="button" onclick="document.getElementById('demo').innerHTML = Date()">Go!</button>
+        <button class="btn" type="button" onclick="
+        lol = document.getElementById('mainInput').value;
+        document.getElementById('allOutput').innerHTML = lol;
+        ">Go!</button>
         
         <p id="demo"></p>
     </div>
