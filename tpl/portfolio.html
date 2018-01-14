@@ -1,12 +1,18 @@
 <div class="row">
-    <textarea class="form-control" rows="40" id="allOutput" disabled></textarea>
+    <style>
+    #allOutput {
+        padding-left: 30px;
+    }
+    </style>
+    <textarea class="form-control" rows="40" id="allOutput" readonly></textarea>
 </div>
 <div class="row">
     <div class="input-append">
         <input class="span2" id="mainInput" type="text">
         <button class="btn" type="button" onclick="
-        lol = document.getElementById('mainInput').value;
-        document.getElementById('allOutput').innerHTML = lol;
+        i_val = document.getElementById('mainInput').value;
+        o_val = document.getElementById('allOutput').value;
+        document.getElementById('allOutput').innerHTML = i_val + \"\n\" + o_val;
         ">Go!</button>
         
         <p id="demo"></p>
