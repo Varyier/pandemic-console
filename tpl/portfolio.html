@@ -1,4 +1,61 @@
 <script>
+  // all storable data
+  var State = {
+    Towns : 
+    [
+    // Blue - 'B'
+      {name:'Atlanta',        color:'B', ways:[1,2,3], disB:0,disK:0,disR:0, lab:true}, // 0
+      {name:'Chicago',        color:'B', ways:[0,3,5], disB:0,disK:0,disR:0, lab:false}, // 1
+      {name:'London',         color:'B', ways:[0,8,9], disB:0,disK:0,disR:0, lab:false}, // 2
+      {name:'St. Petersburg', color:'B', ways:[0,1], disB:0,disK:0,disR:0, lab:false}, // 3
+
+      // Black - 'K'
+      {name:'Algeria',  color:'K', ways:[5,6,8], disB:0,disK:0,disR:0, lab:false}, // 4
+      {name:'Moscow',   color:'K', ways:[1,4,8], disB:0,disK:0,disR:0, lab:false}, // 5
+      {name:'Istambul', color:'K', ways:[4,7], disB:0,disK:0,disR:0, lab:false}, // 6
+      {name:'Chennai',  color:'K', ways:[6,9,11], disB:0,disK:0,disR:0, lab:false}, // 7
+
+      // Red - 'R'
+      {name:'Seoul',   color:'R', ways:[2,4,5,9], disB:0,disK:0,disR:0, lab:false}, // 8
+      {name:'Osaka',   color:'R', ways:[2,7,8,11], disB:0,disK:0,disR:0, lab:false}, // 9
+      {name:'Sydney',  color:'R', ways:[11], disB:0,disK:0,disR:0, lab:false}, // 10
+      {name:'Jakarta', color:'R', ways:[7,9,10], disB:0,disK:0,disR:0, lab:false} // 11
+    ],
+    
+    Classes :
+    [
+      {name:'Researcher'},
+      {name:'Medic'},
+      {name:'Engeneer'}
+    ],
+    
+    // define two players
+    Players :
+    [
+      {name:'Player1', class:0, hand:[], acts:3, pos:0},
+      {name:'Player2', class:1, hand:[], acts:3, pos:0}
+    ],
+    
+    infect_deck : [0,1,2,3,4,5,6,7,8,9,10,11],
+    infect_drop : [],
+    
+    // -1 - teleport
+    // -2 - free lab
+    // -3 - silent night
+    // -13 - !INFECT
+    help_deck : [0,1,2,3,4,5,6,7,8,9,10,11,-1,-2,-3,-13,-13,-13],
+    help_drop : [],
+    
+    is_silent_night:false,
+    dis_marker:2, // number of cards from infect deck, to use
+    propagation_counter:0, // 4 - lose
+    cur_turn:0,
+    remedyB:false,
+    remedyK:false,
+    remedyR:false
+  };
+  alert(State.Towns[11].ways);
+
   function mymain() {
     i_val = document.getElementById('mainInput').value;
     if(i_val.length > 0) {
@@ -8,9 +65,8 @@
       // Debug
       document.getElementById('allOutput').innerHTML = document.getElementById('ST').value;
     }
-    var myObj = { "name":"John", "age":31, "city":"New York" };
-    var myJSON = JSON.stringify(myObj);
-    document.getElementById('ST').innerHTML = myJSON;
+    // Debug
+    document.getElementById('ST').innerHTML = JSON.stringify(State);;
   }
 </script>
 <div class="row">
