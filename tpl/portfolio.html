@@ -1,14 +1,16 @@
 <script>
   function mymain() {
     i_val = document.getElementById('mainInput').value;
-    o_val = document.getElementById('allOutput').value;
-    document.getElementById('allOutput').innerHTML = o_val + '\n' + '>>' + i_val;
+    if(i_val.length > 0) {
+      o_val = document.getElementById('allOutput').value;
+      document.getElementById('allOutput').innerHTML = o_val + '\n' + '>> ' + i_val;
+    }
   }
 </script>
 <div class="row">
     <textarea class="form-control" rows="40" id="allOutput" readonly style="padding-left: -60px;padding-right: -60px;width: 100%;min-width: 100%;max-width: 100%; height: 400px;min-height: 400px;max-height: 400px;"></textarea>
 </div>
-<div class="row">
+<div class="row" onkeydown="if(event.keyCode==13) { mymain(); }">
     <div class="input-append">
         <input class="span2" id="mainInput" type="text" style="padding-left: -60px;padding-right: -60px;width: 90%;min-width: 90%;max-width: 90%;">
         <button class="btn" type="button" onclick="mymain()">Sumbit</button>
