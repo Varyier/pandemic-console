@@ -5,7 +5,12 @@
       o_val = document.getElementById('allOutput').value;
       document.getElementById('allOutput').innerHTML = o_val + '\n' + '>> ' + i_val;
       document.getElementById('mainInput').value = '';
+      // Debug
+      document.getElementById('allOutput').innerHTML = document.getElementById('ST').value;
     }
+    var myObj = { "name":"John", "age":31, "city":"New York" };
+    var myJSON = JSON.stringify(myObj);
+    document.getElementById('ST').innerHTML = myJSON;
   }
 </script>
 <div class="row">
@@ -15,7 +20,9 @@
     <div class="input-append">
         <input class="span2" id="mainInput" type="text" style="padding-left: -60px;padding-right: -60px;width: 90%;min-width: 90%;max-width: 90%;">
         <button class="btn" type="button" onclick="mymain()">Sumbit</button>
-        
         <p id="demo"></p>
     </div>
+</div>
+<div class="row" hidden>
+    <textarea class="form-control" rows="2" id="ST" readonly style="padding-left: -60px;padding-right: -60px;width: 100%;min-width: 100%;max-width: 100%; height: 400px;min-height: 400px;max-height: 400px;"></textarea>
 </div>
