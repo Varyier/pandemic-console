@@ -32,8 +32,8 @@
     // define two players
     Players :
     [
-      {name:'Player1', class:0, hand:[], acts:3, pos:0},
-      {name:'Player2', class:1, hand:[], acts:3, pos:0}
+      {name:'Player1', pclass:0, hand:[], acts:3, pos:0},
+      {name:'Player2', pclass:1, hand:[], acts:3, pos:0}
     ],
     
     infect_deck : [0,1,2,3,4,5,6,7,8,9,10,11],
@@ -50,9 +50,12 @@
     dis_marker:2, // number of cards from infect deck, to use
     propagation_counter:0, // 4 - lose
     cur_turn:0,
+    cur_player:0,
     remedyB:false,
     remedyK:false,
-    remedyR:false
+    remedyR:false,
+    
+    started = false
   };
 
   // COMMANDS:
@@ -158,7 +161,146 @@
     }
   }
   
+  function getRndInteger(min, max) {
+    return Math.floor(Math.random() * (max - min) ) + min;
+  }
+  
+  function swapElems(arr, e1i, e2i) {
+    var tmp = arr[e1i];
+    arr[e1i] = arr[e2i];
+    arr[e2i] = tmp;
+  }
+  
+  function shuffleArr(arr) {
+    var i=0;
+    for(i=0; i<arr.length; i++) {
+      var e1i = getRndInteger(0, arr.length);
+      var e2i = getRndInteger(0, arr.length);
+      swapElems(arr, e1i, e2i);
+    }
+  }  
+  
+  function getCardDispName(card_id) {
+    if(card_id < 0) {
+      if(card_id == -1) {
+        return '!Teleport'
+      } else if (card_id == -2) {
+        return '!FreeLab';
+      } else if (card_id == -3) {
+        return '!SilentNight';
+      }
+      
+      return '!!!Undefined';
+    }
+    
+    return State.Towns[card_id];
+  }
+  
+  function infectTown(t_id, color, already_prop) {
+    function match(elem) {
+      return elem == t_id;
+    }
+    
+    if(color == 'B') {
+      if(State.Towns[t_id].disB >= 3) {
+        State.Towns[t_id].disB = 3;
+        if(!already_prop.findIndex(match)) {
+          propagadeDisease(t_id, color, already_prop);
+        }
+      } else {
+        State.Towns[t_id].disB = State.Towns[t_id].disB+1;
+      }
+    } else if (color == 'K') {
+      if(State.Towns[t_id].disK >= 3) {
+        State.Towns[t_id].disK = 3;
+        if(!already_prop.findIndex(match)) {
+          propagadeDisease(t_id, color, already_prop);
+        }
+      } else {
+        State.Towns[t_id].disK = State.Towns[t_id].disK+1;
+      }
+    } else if (color == 'R') {
+      if(State.Towns[t_id].disR >= 3) {
+        State.Towns[t_id].disR = 3;
+        if(!already_prop.findIndex(match)) {
+          propagadeDisease(t_id, color,  already_prop);
+        }
+      } else {
+        State.Towns[t_id].disR = State.Towns[t_id].disR+1;
+      }
+    }
+  }
+  
+  function propagadeDisease(t_id, color, already_prop) {
+    var i=0;
+    already_prop.push(t_id);
+    for(i=0; i<State.Towns[t_id].ways.length; i++) {
+      infectTown(State.Towns[t_id].ways[i], color, already_prop);
+    }
+  }
+  
+  
+  
+  function getInfection(t_id, color) {
+    if(color == 'B') {
+      return State.Towns[t_id].disB;
+    } else if (color == 'K') {
+      return State.Towns[t_id].disK;
+    } else if (color == 'R') {
+      return State.Towns[t_id].disR;
+    }
+    
+    return -1;
+  }
+  
+  function getInfectionStrFull(t_id) {
+    str = 'City';
+    str += ' \'';
+    str += State.Towns[infect].name;
+    str += '\'';
+    str += 'is infected by '
+    var bfirst = true;
+    if(State.Towns[infect].disB > 0) {
+      str += '\'B\' - ';
+      str += State.Towns[infect].disB;
+      bfirst = false;
+    }
+    if(State.Towns[infect].disK > 0) {
+      if(!bfirst) {
+        str += ', '
+      }
+      str += '\'K\' - ';
+      str += State.Towns[infect].disK;
+      bfirst = false;
+    }
+    if(State.Towns[infect].disR > 0) {
+      if(!bfirst) {
+        str += ', '
+      }
+      str += '\'B\' - ';
+      str += State.Towns[infect].disR;
+      bfirst = false;  
+    }
+    if(bfirst) {
+      str += 'NOTHING';
+    }
+    
+    str += ';'
+
+    return str;
+  }
+  
+  function log(str) {
+      o_val = document.getElementById('allOutput').value;
+      document.getElementById('allOutput').innerHTML = o_val + '\n' + str;
+  }
+  
   function process() {
+    if(req_st.command == 'start') {
+      Init();
+    } else {
+      alert('Invalid command ' + req_st.command);
+    }
   }
   
   function mymain() {
@@ -186,6 +328,138 @@
     }
     // Debug
     
+  }
+  
+  // STUFF
+  function drawCard(p_id) {
+    State.Players[p_id].hand.push(State.help_deck[State.help_deck.length-1]);
+    State.help_deck.pop();
+  }
+  
+  function Init() {
+    State.started = false;
+
+    var i=0;
+  
+    for(i=0; i<State.Towns.length; i++) {
+      State.Towns[i].disB = 
+      State.Towns[i].disK =
+      State.Towns[i].disR = 0;
+      // lab only in Atlanta
+      State.Towns[i].lab = (i==0);
+    }
+    
+    // Init Players, assigning classes
+    var classes_left = [];
+    for(i=0; i<State.Classes.length; i++) {
+      classes_left.push(i);
+    }
+    
+    shuffleArr(classes_left);
+    for(i=0; i<State.Players.length; i++) {
+      State.Players[i].pclass = classes_left[i];
+      State.Players[i].hand = [];
+      State.Players[i].acts = 3;
+      State.Players[i].pos = 0; // Atlanta
+    }
+    
+    State.infect_deck = [0,1,2,3,4,5,6,7,8,9,10,11];
+    State.infect_drop = [];
+    shuffleArr(State.infect_deck);
+    
+    // -1 - teleport
+    // -2 - free lab
+    // -3 - silent night
+    // -13 - !INFECT (must be 3)
+    State.help_deck = [0,1,2,3,4,5,6,7,8,9,10,11,-1,-2,-3];
+    State.help_drop = [];
+    shuffleArr(State.help_drop);
+    
+    State.is_silent_night = false;
+    State.dis_marker = 2;
+    State.propagation_counter = 0;
+    State.cur_turn = 0;
+    State.cur_player = getRndInteger(0, State.Players.length);
+    State.remedyB = false;
+    State.remedyK = false;
+    State.remedyR = false;
+    
+    // initial cards
+    for(i=0; i<State.Players.length; i++) {
+      drawCard(i);
+    }
+    
+    log('New game started.');
+    for(i=0; i<State.Players.length; i++) {
+      var str = 'Player';
+      str += ' \'';
+      str += State.Players[i].name;
+      str += '\'';
+      str += ' has';
+      str += ' \'';
+      str += getCardDispName(hand[0]);
+      str += '\'';
+      str += ';';
+      log(str);
+    }
+    
+    var str = '';
+    // initial infect
+    // 3
+    var infect = State.infect_deck[State.infect_deck.length-1];
+    var arr = [];
+    State.infect_deck.pop();
+    State.infect_drop.push(infect);
+    infectTown(infect, State.Towns[i].color, arr);
+    infectTown(infect, State.Towns[i].color, arr);
+    infectTown(infect, State.Towns[i].color, arr);
+    log(getInfectionStrFull(infect));
+    
+    infect = State.infect_deck[State.infect_deck.length-1];
+    State.infect_deck.pop();
+    State.infect_drop.push(infect);
+    infectTown(infect, State.Towns[i].color, arr);
+    infectTown(infect, State.Towns[i].color, arr);
+    infectTown(infect, State.Towns[i].color, arr);
+    log(getInfectionStrFull(infect));
+    
+    // 2
+    infect = State.infect_deck[State.infect_deck.length-1];
+    State.infect_deck.pop();
+    State.infect_drop.push(infect);
+    infectTown(infect, State.Towns[i].color, arr);
+    infectTown(infect, State.Towns[i].color, arr);
+    log(getInfectionStrFull(infect));
+    
+    infect = State.infect_deck[State.infect_deck.length-1];
+    State.infect_deck.pop();
+    State.infect_drop.push(infect);
+    infectTown(infect, State.Towns[i].color, arr);
+    infectTown(infect, State.Towns[i].color, arr);
+    log(getInfectionStrFull(infect));
+
+    // 1
+    infect = State.infect_deck[State.infect_deck.length-1];
+    State.infect_deck.pop();
+    State.infect_drop.push(infect);
+    infectTown(infect, State.Towns[i].color, arr);
+    log(getInfectionStrFull(infect));
+    
+    infect = State.infect_deck[State.infect_deck.length-1];
+    State.infect_deck.pop();
+    State.infect_drop.push(infect);
+    infectTown(infect, State.Towns[i].color, arr);
+    log(getInfectionStrFull(infect));
+    
+    str = 'Now the turn is for player';
+    str += ' \'';
+    str += State.Players[State.cur_player].name;
+    str += '\'';
+    str += ';';
+    
+    log(str);
+    
+    State.started = true;
   }
 </script>
 <div class="row">
