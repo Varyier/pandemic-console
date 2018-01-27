@@ -54,7 +54,6 @@
     remedyK:false,
     remedyR:false
   };
-  alert(State.Towns[11].ways);
 
   // COMMANDS:
   // /help - displays help
@@ -129,7 +128,7 @@
               
               if(pos_arg2_delim != -1) {
                 var req_cut3 = req_cut2.slice(pos_arg2_delim+1, req_cut2.length);
-                alert('')
+                alert(req_cut3);
                 if(req_cut3.length > 0) {
                   var pos_arg3_delim = req_cut3.indexOf(' ');
                   if(pos_arg2_delim != -1) {
