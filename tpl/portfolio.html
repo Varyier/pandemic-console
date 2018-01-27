@@ -128,10 +128,9 @@
               
               if(pos_arg2_delim != -1) {
                 var req_cut3 = req_cut2.slice(pos_arg2_delim+1, req_cut2.length);
-                alert(req_cut3);
                 if(req_cut3.length > 0) {
                   var pos_arg3_delim = req_cut3.indexOf(' ');
-                  if(pos_arg2_delim != -1) {
+                  if(pos_arg3_delim != -1) {
                     req_st.arg3 = req_cut3.slice(0, pos_arg3_delim);
                   } else {
                     req_st.arg3 = req_cut3.slice(0, req_cut3.length);
