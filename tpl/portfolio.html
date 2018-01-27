@@ -129,6 +129,7 @@
               
               if(pos_arg2_delim != -1) {
                 var req_cut3 = req_cut2.slice(pos_arg2_delim+1, req_cut2.length);
+                alert('')
                 if(req_cut3.length > 0) {
                   var pos_arg3_delim = req_cut3.indexOf(' ');
                   if(pos_arg2_delim != -1) {
@@ -146,6 +147,16 @@
         }
       }
 
+      // remove quotes
+      if(req_st.arg1.indexOf('\'') == 0 && req_st.arg1.lastIndexOf('\'') == (req_st.arg1.length-1)) {
+        req_st.arg1 = req_st.arg1.slice(1,req_st.arg1.length-1);
+      }
+      if(req_st.arg2.indexOf('\'') == 0 && req_st.arg2.lastIndexOf('\'') == (req_st.arg2.length-1)) {
+        req_st.arg2 = req_st.arg2.slice(1,req_st.arg2.length-1);
+      }
+      if(req_st.arg3.indexOf('\'') == 0 && req_st.arg3.lastIndexOf('\'') == (req_st.arg3.length-1)) {
+        req_st.arg3 = req_st.arg3.slice(1,req_st.arg3.length-1);
+      }
     }
   }
   
