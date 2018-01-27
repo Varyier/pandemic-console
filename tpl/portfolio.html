@@ -7,7 +7,7 @@
       {name:'Atlanta',        color:'B', ways:[1,2,3], disB:0,disK:0,disR:0, lab:true}, // 0
       {name:'Chicago',        color:'B', ways:[0,3,5], disB:0,disK:0,disR:0, lab:false}, // 1
       {name:'London',         color:'B', ways:[0,8,9], disB:0,disK:0,disR:0, lab:false}, // 2
-      {name:'St. Petersburg', color:'B', ways:[0,1], disB:0,disK:0,disR:0, lab:false}, // 3
+      {name:'St.Petersburg', color:'B', ways:[0,1], disB:0,disK:0,disR:0, lab:false}, // 3
 
       // Black - 'K'
       {name:'Algeria',  color:'K', ways:[5,6,8], disB:0,disK:0,disR:0, lab:false}, // 4
@@ -55,7 +55,7 @@
     remedyK:false,
     remedyR:false,
     
-    started = false
+    started:false
   };
 
   // COMMANDS:
@@ -65,7 +65,8 @@
   // /where - check all players' position
   // /ways - show all road ways from the current position of the current player
   // /ways 'NAME' - show all road ways from a specified town
-  // /clean - clean one (OR all, if can) disease element from the current position (if exist any)
+  // /heal - clean one (OR all, if can) disease element from the current position (if exist any)
+  // /heal CLR - clean one (OR all, if can) disease element from the current position (if exist any)
   // /aleft - show available actions
   // /info - detailed info about the game state
   
@@ -74,6 +75,8 @@
   
   // /warp 'NAME' - teleports current player to the specified town 'NAME', spends card 'NAME'
   // /warp -E 'NAME' 'SNAME' - (Engeneer Only) teleports current player to the specified town 'NAME', spends card 'SNAME' (one time per turn)
+  
+  // /drive 'NAME' - go to a town, that is next to current position
   
   // /give 'NAME' - gives the card 'NAME' to the other player, must be in that town both
   // /take 'NAME' - gives the card 'NAME' to the other player, must be in that town both
@@ -192,8 +195,7 @@
       
       return '!!!Undefined';
     }
-    
-    return State.Towns[card_id];
+    return State.Towns[card_id].name;
   }
   
   function infectTown(t_id, color, already_prop) {
@@ -237,9 +239,7 @@
     for(i=0; i<State.Towns[t_id].ways.length; i++) {
       infectTown(State.Towns[t_id].ways[i], color, already_prop);
     }
-  }
-  
-  
+  }  
   
   function getInfection(t_id, color) {
     if(color == 'B') {
@@ -256,29 +256,29 @@
   function getInfectionStrFull(t_id) {
     str = 'City';
     str += ' \'';
-    str += State.Towns[infect].name;
+    str += State.Towns[t_id].name;
     str += '\'';
-    str += 'is infected by '
+    str += 'is infected by ';
     var bfirst = true;
-    if(State.Towns[infect].disB > 0) {
+    if(State.Towns[t_id].disB > 0) {
       str += '\'B\' - ';
-      str += State.Towns[infect].disB;
+      str += State.Towns[t_id].disB;
       bfirst = false;
     }
-    if(State.Towns[infect].disK > 0) {
+    if(State.Towns[t_id].disK > 0) {
       if(!bfirst) {
         str += ', '
       }
       str += '\'K\' - ';
-      str += State.Towns[infect].disK;
+      str += State.Towns[t_id].disK;
       bfirst = false;
     }
-    if(State.Towns[infect].disR > 0) {
+    if(State.Towns[t_id].disR > 0) {
       if(!bfirst) {
         str += ', '
       }
-      str += '\'B\' - ';
-      str += State.Towns[infect].disR;
+      str += '\'R\' - ';
+      str += State.Towns[t_id].disR;
       bfirst = false;  
     }
     if(bfirst) {
@@ -290,17 +290,62 @@
     return str;
   }
   
+  function getTownIdByName(name) {
+    var i=0;
+    for(i=0; i<State.Towns.length; i++) {
+      if(State.Towns[i].name == name) {
+        return i;
+      }
+    }
+    
+    return -1;
+  }
+  
+  function isTownInWays(t_id, wt_id) {
+    var i=0;
+    for(i=0; i<State.Towns[wt_id].ways.length; i++) {
+      if(State.Towns[wt_id].ways[i] == t_id) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+  
   function log(str) {
       o_val = document.getElementById('allOutput').value;
       document.getElementById('allOutput').innerHTML = o_val + '\n' + str;
   }
   
   function process() {
-    if(req_st.command == 'start') {
+    var cmd = req_st.command;
+    var arg1 = req_st.arg1;
+    var arg2 = req_st.arg2;
+    var arg3 = req_st.arg3;
+
+    if(cmd == 'start') {
       Init();
+    } else if(cmd == 'ways') {
+      Ways(arg1);
+    } else if(cmd == 'where') {
+      Where();
+    } else if(cmd == 'drive') {
+      Drive(arg1);
+    } else if(cmd == 'turn') {
+      Turn();
+    } else if(cmd == 'heal') {
+      Heal(arg1);
+    } else if(cmd == 'info') {
+      Info();
+    } else if(cmd == 'misc_clr') {
+      document.getElementById('allOutput').innerHTML = "";
     } else {
       alert('Invalid command ' + req_st.command);
     }
+  }
+  
+  function printHello() {
+    log('Welcome to Digital Pandemic v0.1 pre-alpha by Varyier.');
   }
   
   function mymain() {
@@ -311,23 +356,17 @@
       document.getElementById('mainInput').value = '';
       
       parse_req(i_val);
-      
-      // Debug
-      alert(JSON.stringify(req_st));
-      
       if(req_st.command.length > 0) {
         // load game state
-        State = JSON.parse(document.getElementById('ST').value);
+        if(document.getElementById('ST').value != '') {
+          State = JSON.parse(document.getElementById('ST').value);
+        }
         // process one step (command)
         process();
         // store game state
         document.getElementById('ST').innerHTML = JSON.stringify(State);
       }
-      // Debug
-      //document.getElementById('allOutput').innerHTML = document.getElementById('ST').value;
     }
-    // Debug
-    
   }
   
   // STUFF
@@ -349,20 +388,6 @@
       State.Towns[i].lab = (i==0);
     }
     
-    // Init Players, assigning classes
-    var classes_left = [];
-    for(i=0; i<State.Classes.length; i++) {
-      classes_left.push(i);
-    }
-    
-    shuffleArr(classes_left);
-    for(i=0; i<State.Players.length; i++) {
-      State.Players[i].pclass = classes_left[i];
-      State.Players[i].hand = [];
-      State.Players[i].acts = 3;
-      State.Players[i].pos = 0; // Atlanta
-    }
-    
     State.infect_deck = [0,1,2,3,4,5,6,7,8,9,10,11];
     State.infect_drop = [];
     shuffleArr(State.infect_deck);
@@ -373,7 +398,22 @@
     // -13 - !INFECT (must be 3)
     State.help_deck = [0,1,2,3,4,5,6,7,8,9,10,11,-1,-2,-3];
     State.help_drop = [];
-    shuffleArr(State.help_drop);
+    shuffleArr(State.help_deck);
+    
+    // Init Players, assigning classes
+    var classes_left = [];
+    for(i=0; i<State.Classes.length; i++) {
+      classes_left.push(i);
+    }
+    
+    shuffleArr(classes_left);
+    for(i=0; i<State.Players.length; i++) {
+      State.Players[i].pclass = classes_left[i];
+      State.Players[i].hand = [];
+      drawCard(i);
+      State.Players[i].acts = 3;
+      State.Players[i].pos = 0; // Atlanta
+    }
     
     State.is_silent_night = false;
     State.dis_marker = 2;
@@ -384,11 +424,6 @@
     State.remedyK = false;
     State.remedyR = false;
     
-    // initial cards
-    for(i=0; i<State.Players.length; i++) {
-      drawCard(i);
-    }
-    
     log('New game started.');
     for(i=0; i<State.Players.length; i++) {
       var str = 'Player';
@@ -397,7 +432,7 @@
       str += '\'';
       str += ' has';
       str += ' \'';
-      str += getCardDispName(hand[0]);
+      str += getCardDispName(State.Players[i].hand[0]);
       str += '\'';
       str += ';';
       log(str);
@@ -410,45 +445,45 @@
     var arr = [];
     State.infect_deck.pop();
     State.infect_drop.push(infect);
-    infectTown(infect, State.Towns[i].color, arr);
-    infectTown(infect, State.Towns[i].color, arr);
-    infectTown(infect, State.Towns[i].color, arr);
+    infectTown(infect, State.Towns[infect].color, arr);
+    infectTown(infect, State.Towns[infect].color, arr);
+    infectTown(infect, State.Towns[infect].color, arr);
     log(getInfectionStrFull(infect));
     
     infect = State.infect_deck[State.infect_deck.length-1];
     State.infect_deck.pop();
     State.infect_drop.push(infect);
-    infectTown(infect, State.Towns[i].color, arr);
-    infectTown(infect, State.Towns[i].color, arr);
-    infectTown(infect, State.Towns[i].color, arr);
+    infectTown(infect, State.Towns[infect].color, arr);
+    infectTown(infect, State.Towns[infect].color, arr);
+    infectTown(infect, State.Towns[infect].color, arr);
     log(getInfectionStrFull(infect));
     
     // 2
     infect = State.infect_deck[State.infect_deck.length-1];
     State.infect_deck.pop();
     State.infect_drop.push(infect);
-    infectTown(infect, State.Towns[i].color, arr);
-    infectTown(infect, State.Towns[i].color, arr);
+    infectTown(infect, State.Towns[infect].color, arr);
+    infectTown(infect, State.Towns[infect].color, arr);
     log(getInfectionStrFull(infect));
     
     infect = State.infect_deck[State.infect_deck.length-1];
     State.infect_deck.pop();
     State.infect_drop.push(infect);
-    infectTown(infect, State.Towns[i].color, arr);
-    infectTown(infect, State.Towns[i].color, arr);
+    infectTown(infect, State.Towns[infect].color, arr);
+    infectTown(infect, State.Towns[infect].color, arr);
     log(getInfectionStrFull(infect));
 
     // 1
     infect = State.infect_deck[State.infect_deck.length-1];
     State.infect_deck.pop();
     State.infect_drop.push(infect);
-    infectTown(infect, State.Towns[i].color, arr);
+    infectTown(infect, State.Towns[infect].color, arr);
     log(getInfectionStrFull(infect));
     
     infect = State.infect_deck[State.infect_deck.length-1];
     State.infect_deck.pop();
     State.infect_drop.push(infect);
-    infectTown(infect, State.Towns[i].color, arr);
+    infectTown(infect, State.Towns[infect].color, arr);
     log(getInfectionStrFull(infect));
     
     str = 'Now the turn is for player';
@@ -461,8 +496,182 @@
     
     State.started = true;
   }
+  
+  function Where() {
+    var i=0;
+    for(i=0; i<State.Players.length; i++) {
+      var str = 'Player';
+      str += ' \'';
+      str += State.Players[i].name;
+      str += '\'';
+      str += ' is in';
+      str += ' \'';
+      str += State.Towns[State.Players[i].pos].name;
+      str += '\'';
+      str += ';';
+      log(str);
+    }
+  }
+  
+  function Ways(from) {
+    var from_id = -1;
+    var i=0;
+    var from_name;
+    if(from == '') {
+      // current town of the current player
+      from_id = State.Players[State.cur_player].pos;
+      from_name = State.Towns[from_id].name;
+    } else {  
+      for(i=0; i<State.Towns.length; i++) {
+        if(State.Towns[i].name == from) {
+          from_id = i;
+          from_name = State.Towns[from_id].name;
+          break;
+        }
+      }
+    }
+    
+    if(from_id == -1) {
+      log('ERROR[Ways]: cannot find the town ' + from);
+    }
+    
+    var str = 'Ways from ';
+    str += ' \'';
+    str += from_name;
+    str += '\'';
+    str += ' are:'
+    for(i=0; i<State.Towns[from_id].ways.length; i++) {
+      if(i != 0) {
+        str += ','
+      }
+      str += ' \'';
+      str += State.Towns[State.Towns[from_id].ways[i]].name;
+      str += '\'';
+    }
+    str += ';'
+    
+    log(str);
+  }
+  
+  function Drive(dest) {
+    var pos = State.Players[State.cur_player].pos;
+    var pos_dest = getTownIdByName(dest);
+    if(pos_dest < 0) {
+      log('Incorrect city name.');
+    } else if(State.Players[State.cur_player].acts <= 0) {
+      log('No actions left.');
+    } else if(!isTownInWays(pos_dest, pos)) {
+      log('City is unreacheble from the current positon.');
+    } else {
+      State.Players[State.cur_player].acts--;
+      State.Players[State.cur_player].pos = pos_dest;
+      
+      var str = 'Player';
+      str += ' \'';
+      str += State.Players[State.cur_player].name;
+      str += '\'';
+      str += ' is now in';
+      str += ' \'';
+      str += State.Towns[State.Players[State.cur_player].pos].name;
+      str += '\'';
+      str += ';';
+      log(str);
+      
+      log('Actions left: ' + State.Players[State.cur_player].acts + ';');
+    }
+  }
+  
+  function Turn() {
+    var str = 'Player';
+    str += ' \'';
+    str += State.Players[State.cur_player].name;
+    str += '\'';
+    str += ' ended the turn';
+    str += ';';
+    log(str);
+    
+    var i=0;
+    for(i=0; i<State.Players.length; i++) {
+      // draw cards (ignore for now)
+      // ...
+      State.Players[i].acts = 3;
+    }
+    
+    // diseases
+    log('Infection time!');
+    
+    var arr = [];
+    for(i=0; i<State.dis_marker; i++) {
+      var infect = State.infect_deck[State.infect_deck.length-1];
+      State.infect_deck.pop();
+      State.infect_drop.push(infect);
+      infectTown(infect, State.Towns[infect].color, arr);
+      log(getInfectionStrFull(infect));
+      
+      if(State.infect_deck.length <= 0) {
+        log('Refill infection deck');
+        State.infect_deck = State.infect_drop;
+        State.infect_drop = [];
+        shuffleArr(State.infect_deck);
+      }
+    }
+    
+    State.cur_player = (State.cur_player+1) % State.Players.length;
+    
+    if(State.cur_player == 0) {
+      State.cur_turn++;
+      log('Now it\'s turn number ' + State.cur_turn + ';');
+    }
+    
+    str = 'Player';
+    str += ' \'';
+    str += State.Players[State.cur_player].name;
+    str += '\'';
+    str += ' takes the turn';
+    str += ';';
+    log(str);
+  }
+  
+  function Heal(color) {
+    var pos = State.Players[State.cur_player].pos;
+    
+    if(color == '') {
+      color = State.Towns[pos].color;
+    }
+    
+    if(    (color == 'B' && State.Towns[pos].disB <= 0)
+        || (color == 'K' && State.Towns[pos].disK <= 0)
+        || (color == 'R' && State.Towns[pos].disR <= 0)) {
+      log('Nothing to heal.');
+    } else if(State.Players[State.cur_player].acts <= 0) {
+      log('No actions left.');
+    } else {
+      if(color == 'B') {
+        State.Towns[pos].disB--;
+      } else if(color == 'K') {
+        State.Towns[pos].disK--;
+      } else if(color == 'R') {
+        State.Towns[pos].disR--;
+      }
+    
+      State.Players[State.cur_player].acts--;
+      log(getInfectionStrFull(pos));
+      
+      log('Actions left: ' + State.Players[State.cur_player].acts + ';');
+    }
+  }
+  
+  function Info() {
+    log('Detailed game info:');
+    var i=0;
+    for(i=0; i<State.Towns.length; i++) {
+      if(State.Towns[i].disB > 0 || State.Towns[i].disK > 0 || State.Towns[i].disR > 0) {
+        log(getInfectionStrFull(i));
+      }
+    }
+  }
 </script>
-<div class="row">
+<div class="row" onload="printHello()">
     <textarea class="form-control" rows="40" id="allOutput" readonly style="padding-left: -60px;padding-right: -60px;width: 100%;min-width: 100%;max-width: 100%; height: 400px;min-height: 400px;max-height: 400px;"></textarea>
 </div>
 <div class="row" onkeydown="if(event.keyCode==13) { mymain(); }">
