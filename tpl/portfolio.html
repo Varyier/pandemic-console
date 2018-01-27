@@ -56,17 +56,127 @@
   };
   alert(State.Towns[11].ways);
 
+  // COMMANDS:
+  // /help - displays help
+  // /start - start new game
+  // /hands - check all cards in players' hands
+  // /where - check all players' position
+  // /ways - show all road ways from the current position of the current player
+  // /ways 'NAME' - show all road ways from a specified town
+  // /clean - clean one (OR all, if can) disease element from the current position (if exist any)
+  // /aleft - show available actions
+  // /info - detailed info about the game state
+  
+  // /lab - builds a lab in the current town, spends card
+  // /lab -E - (Engeneer Only) builds a lab in the current town, doesn't spend card
+  
+  // /warp 'NAME' - teleports current player to the specified town 'NAME', spends card 'NAME'
+  // /warp -E 'NAME' 'SNAME' - (Engeneer Only) teleports current player to the specified town 'NAME', spends card 'SNAME' (one time per turn)
+  
+  // /give 'NAME' - gives the card 'NAME' to the other player, must be in that town both
+  // /take 'NAME' - gives the card 'NAME' to the other player, must be in that town both
+  // /give -R 'NAME' - (Researcher only) gives the card 'NAME' to the other player, must be in that town both
+  // /take -R 'NAME' - take the card 'NAME' from the other player, must be in that town both, other player must be Researcher
+  
+  // /remedy 'X' 'NAME1', 'NAME2' - invent the remedy from the specified disease 'X', using two cards 'NAME1', 'NAME2'
+  // /turn - end the turn
+  
+  var req_st = {
+    command:'',
+    arg1:'',
+    arg2:'',
+    arg3:''
+  };
+  
+  function parse_req(req) {
+    req_st.command = '';
+    if(req.indexOf('/') != 0) {
+      alert('Wrong request. Type \'/help\' for more info.');
+    } else {
+      var pos_cmd_delim = req.indexOf(' ');
+      if(pos_cmd_delim == -1) {
+        // no args
+        req_st.command = req.slice(1, req.length);
+      } else {
+        // with args, probably
+        req_st.command = req.slice(1, pos_cmd_delim);
+      }
+      
+      req_st.arg1 = '';
+      req_st.arg2 = '';
+      req_st.arg3 = '';
+      
+      if(pos_cmd_delim != -1) {
+        var req_cut = req.slice(pos_cmd_delim+1, req.length);
+        if(req_cut.length > 0) {        
+          // at least 1 arg
+          var pos_arg1_delim = req_cut.indexOf(' ');
+          if(pos_arg1_delim != -1) {
+            req_st.arg1 = req_cut.slice(0, pos_arg1_delim);
+          } else {
+            req_st.arg1 = req_cut.slice(0, req_cut.length);
+          }
+          
+          if(pos_arg1_delim != -1) {
+            var req_cut2 = req_cut.slice(pos_arg1_delim+1, req_cut.length);
+            if(req_cut2.length > 0) {
+              var pos_arg2_delim = req_cut2.indexOf(' ');
+              if(pos_arg2_delim != -1) {
+                req_st.arg2 = req_cut2.slice(0, pos_arg2_delim);
+              } else {
+                req_st.arg2 = req_cut2.slice(0, req_cut2.length);
+              }
+              
+              if(pos_arg2_delim != -1) {
+                var req_cut3 = req_cut2.slice(pos_arg2_delim+1, req_cut2.length);
+                if(req_cut3.length > 0) {
+                  var pos_arg3_delim = req_cut3.indexOf(' ');
+                  if(pos_arg2_delim != -1) {
+                    req_st.arg3 = req_cut3.slice(0, pos_arg3_delim);
+                  } else {
+                    req_st.arg3 = req_cut3.slice(0, req_cut.length);
+                  }
+                  
+                  //req_cut = req_cut.slice(pos_arg3_delim+1, req_cut.length);
+                  
+                }
+              }
+            }
+          }
+        }
+      }
+
+    }
+  }
+  
+  function process() {
+  }
+  
   function mymain() {
     i_val = document.getElementById('mainInput').value;
     if(i_val.length > 0) {
       o_val = document.getElementById('allOutput').value;
       document.getElementById('allOutput').innerHTML = o_val + '\n' + '>> ' + i_val;
       document.getElementById('mainInput').value = '';
+      
+      parse_req(i_val);
+      
       // Debug
-      document.getElementById('allOutput').innerHTML = document.getElementById('ST').value;
+      alert(JSON.stringify(req_st));
+      
+      if(req_st.command.length > 0) {
+        // load game state
+        State = JSON.parse(document.getElementById('ST').value);
+        // process one step (command)
+        process();
+        // store game state
+        document.getElementById('ST').innerHTML = JSON.stringify(State);
+      }
+      // Debug
+      //document.getElementById('allOutput').innerHTML = document.getElementById('ST').value;
     }
     // Debug
-    document.getElementById('ST').innerHTML = JSON.stringify(State);;
+    
   }
 </script>
 <div class="row">
