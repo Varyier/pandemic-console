@@ -741,6 +741,11 @@
       str += ' \'';
       str += State.Players[i].name;
       str += '\'';
+      
+      str += ' is \''
+      str += State.Classes[State.Players[i].pclass];
+      str += '\','
+      
       str += ' has: ';
       
       var j=0;
