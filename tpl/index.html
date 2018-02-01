@@ -399,13 +399,14 @@
 //      }
 //    }
   
-    var i=0;
+    log('Outbreak in \'' + State.Towns[t_id].name + '\'!');
     already_prop.push(t_id);
     // increment number of outbreaks
     State.outbreak_counter++;
     if(State.outbreak_counter > State.OUTBR_MAX) {
       Lose('too many outbreaks');
     } else {
+      var i=0;
       for(i=0; i<State.Towns[t_id].ways.length; i++) {
         if(!infectTown(State.Towns[t_id].ways[i], color, already_prop)) {
           return false;
