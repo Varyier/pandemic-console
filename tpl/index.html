@@ -1038,6 +1038,8 @@
         if(!drawCards(State.cur_player)) {
           return;
         }
+        var card_id = State.Players[State.cur_player].hand[State.Players[State.cur_player].hand.length-1];
+        log('Current player draws \'' + getCardDispName(card_id) + '\';');
       }
     }
     
