@@ -1,4 +1,2 @@
-Сайт программиста
-===============
-
-http://habrahabr.ru/post/159631/
+﻿Игра Pandemic в консольном режиме===============
+http://v-prj0.herokuapp.com
