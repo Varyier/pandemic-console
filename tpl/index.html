@@ -93,6 +93,7 @@
     outbreak_counter:0, // >=7 - lose
     cur_turn:0,
     cur_player:0,
+    first_player:0,
     
     remedyB:false,
     remedyK:false,
@@ -733,7 +734,7 @@
     State.dis_marker = 2;
     State.outbreak_counter = 0;
     State.cur_turn = 0;
-    State.cur_player = getRndInteger(0, State.Players.length);
+    State.first_player = State.cur_player = getRndInteger(0, State.Players.length);
     
     log('New game started.');
     for(i=0; i<State.Players.length; i++) {
@@ -1071,7 +1072,7 @@
     
     State.cur_player = (State.cur_player+1) % State.Players.length;
     
-    if(State.cur_player == 0) {
+    if(State.cur_player == State.first_player) {
       State.cur_turn++;
       log('Now it\'s turn number ' + State.cur_turn + ';');
     }
