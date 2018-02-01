@@ -6,10 +6,10 @@
     // Blue - 'B'
       {name:'Atlanta',        color:'B', ways:[1,38], disB:0,disK:0,disR:0,disY:0, lab:true}, // 0
       {name:'Chicago',        color:'B', ways:[0,2,3,36,37], disB:0,disK:0,disR:0,disY:0, lab:false}, // 1
-      {name:'SanFrancisco'    color:'B', ways:[1,31,34,36], disB:0,disK:0,disR:0,disY:0, lab:false}, // 2
-      {name:'Monreal'         color:'B', ways:[1,4,5], disB:0,disK:0,disR:0,disY:0, lab:false}, // 3
-      {name:'Washington'      color:'B', ways:[0,3,5,38], disB:0,disK:0,disR:0,disY:0, lab:false}, // 4
-      {name:'NewYork'         color:'B', ways:[3,4,6,7], disB:0,disK:0,disR:0,disY:0, lab:false}, // 5
+      {name:'SanFrancisco',   color:'B', ways:[1,31,34,36], disB:0,disK:0,disR:0,disY:0, lab:false}, // 2
+      {name:'Monreal',        color:'B', ways:[1,4,5], disB:0,disK:0,disR:0,disY:0, lab:false}, // 3
+      {name:'Washington',     color:'B', ways:[0,3,5,38], disB:0,disK:0,disR:0,disY:0, lab:false}, // 4
+      {name:'NewYork',        color:'B', ways:[3,4,6,7], disB:0,disK:0,disR:0,disY:0, lab:false}, // 5
       {name:'London',         color:'B', ways:[5,7,8,9], disB:0,disK:0,disR:0,disY:0, lab:false}, // 6
       {name:'Madrid',         color:'B', ways:[5,6,9,12,43], disB:0,disK:0,disR:0,disY:0, lab:false}, // 7
       {name:'Essen',          color:'B', ways:[6,9,10,11], disB:0,disK:0,disR:0,disY:0, lab:false}, // 8
@@ -510,7 +510,7 @@
       return pl.pclass == c_id;
     }
     
-    return State.Player.findIndex(match);
+    return State.Players.findIndex(match);
   }
   
   function getPlayerIdByName(pname) {
@@ -560,39 +560,39 @@
     } else if(cmd == 'misc_clr') {
       document.getElementById('allOutput').innerHTML = "";
     } else if(cmd == 'misc_rules') {
-      log('This is the legendary \'Pandemic\' board game. Here you and your friends is a group of people, who tries to defeat '
-          'four deadly diseases, that are trying to kill the humanity! You are travelling across the Earth to find the remedy for each disease.\n'
-          '  The Earth is divided into several cities, that are connected with several roads. There are four diseases (Red, Yellow, Blue and Black), and four city kinds,'
-          ' that are in the risk group of the corresponding disease. Color indicators are: \'R\' for Red, \'Y\' for yellow, \'B\' for blue, \'K\' for black. '
-          ' So, when infection comes, cities is usually being infected by the disease of their own color.\n'
-          '  The game cycle is structured as follows:\n'
-          ' 1) Player performs his or her turn;\n'
-          ' 2) Player draws two helper cards;\n'
-          ' 3) Infection comes;\n'
-          'This actions are looped until the end of the game.\n'
-          '  There are two decks used in this game:\n'
-          ' 1) Helper deck (or, originally, Player deck) - cards, that helps players to defeat the diseases with a little surprise...;'
-          ' 2) Infection deck - cards, that identifying cities, that gets additional disease markers;'
-          '  Any players can perform these actions:\n'
-          ' 1) Move directly to the nearest city, typing \'/drive \'CITY_NAME\'\';'
-          ' 2) Move to any city, using \'/fly\' and spend the card of that city;\n'
-          ' 3) Move to any city by player\'s choice and spend the card of the city, the player is in at this time - command \'/warp \'DEST_CITY_NAME\'\';\n'
-          ' 4) Move from a city with Lab to another city with Lab - command lwarp \'CITY_NAME\';\n'
-          ' 5) Give the card of a city, current player stands in, to another player, who stands at the same city; - type \'/cchange <\'PLAYER_NAME\'>\','
-          'player name is needed only in case you\'re trying to give the card to one of several players, stood in the current town;\n'
-          ' 6) Build a Lab for warping and inventing remedies. Type \'Lab\' to spend card of the current city and build Lab there;'
-          ' 7) Heal the disease in the current city. Type \'/heal\' to heal all disease you can in the current city of its own color. '
-          'Type \'/heal COLOR_ID\' to heal the disease of another color.'
-          ' 8) Invent the remedy from the disease. Type \'/remedy COLOR_ID CARD1_NAME CARD2_NAME\' to invent the remedy from the disease of color COLOR_ID '
-          'using five city cards of that color, so you must have them (and extra cards, you specified). Scientist needs only four. '
-          'CARDi_NAME - card names, that you DON\'T want to use in the recipe (usually, it\'s enough to determine all cards, you actually want to use, '
-          'but if a Scientist has seven cards of one color, the third not used card will be chosen randomly - VERY RARE CASE).'
+      //log('This is the legendary \'Pandemic\' board game. Here you and your friends is a group of people, who tries to defeat '
+      //    'four deadly diseases, that are trying to kill the humanity! You are travelling across the Earth to find the remedy for each disease.\n'
+      //    '  The Earth is divided into several cities, that are connected with several roads. There are four diseases (Red, Yellow, Blue and Black), and four city kinds,'
+      //    ' that are in the risk group of the corresponding disease. Color indicators are: \'R\' for Red, \'Y\' for yellow, \'B\' for blue, \'K\' for black. '
+      //    ' So, when infection comes, cities is usually being infected by the disease of their own color.\n'
+      //    '  The game cycle is structured as follows:\n'
+      //    ' 1) Player performs his or her turn;\n'
+      //    ' 2) Player draws two helper cards;\n'
+      //    ' 3) Infection comes;\n'
+      //    'This actions are looped until the end of the game.\n'
+      //    '  There are two decks used in this game:\n'
+      //    ' 1) Helper deck (or, originally, Player deck) - cards, that helps players to defeat the diseases with a little surprise...;'
+      //    ' 2) Infection deck - cards, that identifying cities, that gets additional disease markers;'
+      //    '  Any players can perform these actions:\n'
+      //    ' 1) Move directly to the nearest city, typing \'/drive \'CITY_NAME\'\';'
+      //    ' 2) Move to any city, using \'/fly\' and spend the card of that city;\n'
+      //    ' 3) Move to any city by player\'s choice and spend the card of the city, the player is in at this time - command \'/warp \'DEST_CITY_NAME\'\';\n'
+      //    ' 4) Move from a city with Lab to another city with Lab - command lwarp \'CITY_NAME\';\n'
+      //    ' 5) Give the card of a city, current player stands in, to another player, who stands at the same city; - type \'/cchange <\'PLAYER_NAME\'>\','
+      //    'player name is needed only in case you\'re trying to give the card to one of several players, stood in the current town;\n'
+      //    ' 6) Build a Lab for warping and inventing remedies. Type \'Lab\' to spend card of the current city and build Lab there;'
+      //    ' 7) Heal the disease in the current city. Type \'/heal\' to heal all disease you can in the current city of its own color. '
+      //    'Type \'/heal COLOR_ID\' to heal the disease of another color.'
+      //    ' 8) Invent the remedy from the disease. Type \'/remedy COLOR_ID CARD1_NAME CARD2_NAME\' to invent the remedy from the disease of color COLOR_ID '
+      //    'using five city cards of that color, so you must have them (and extra cards, you specified). Scientist needs only four. '
+      //    'CARDi_NAME - card names, that you DON\'T want to use in the recipe (usually, it\'s enough to determine all cards, you actually want to use, '
+      //    'but if a Scientist has seven cards of one color, the third not used card will be chosen randomly - VERY RARE CASE).'
           
-          '          You should do two common things:\n'
-          '1) Heal the disease. Type \'/heal\', while you are in the city with the existing disease to heal, what you can heal of the color, that this city has.'
-          'Type \'/heal \'COLOR_ID\'\''
+      //    '          You should do two common things:\n'
+      //    '1) Heal the disease. Type \'/heal\', while you are in the city with the existing disease to heal, what you can heal of the color, that this city has.'
+      //    'Type \'/heal \'COLOR_ID\'\''
           
-          'See full rules, for example, here: https://images-cdn.zmangames.com/us-east-1/filer_public/25/12/251252dd-1338-4f78-b90d-afe073c72363/zm7101_pandemic_rules.pdf');
+      //    'See full rules, for example, here: https://images-cdn.zmangames.com/us-east-1/filer_public/25/12/251252dd-1338-4f78-b90d-afe073c72363/zm7101_pandemic_rules.pdf');
     } else if(!State.started) {
       log('Start the game first.');
     } else {
@@ -614,7 +614,7 @@
           State = JSON.parse(document.getElementById('ST').value);
         }
         // process one step (command)
-    //    process();
+        process();
         // store game state
         document.getElementById('ST').innerHTML = JSON.stringify(State);
       }
@@ -696,36 +696,36 @@
       for(j=0; j<State.CARDS_PER_PLAYER_START; j++) {
         drawCards(i);
       }
-      State.Players[i].acts = ACTS_MAX;
+      State.Players[i].acts = State.ACTS_MAX;
       State.Players[i].pos = 0; // Atlanta
     }
     
-    // init Epidemies (always six for now)
-    State.epidemy_count = 6;
+    // init Epidemies (always four for now)
+    State.epidemy_count = 4;
     State.epidemy_id = 0;
     
     var epi_arrs = [];
-    var epi_mod = help_deck.length % State.epidemy_count;
+    var epi_mod = State.help_deck.length % State.epidemy_count;
     var nTaken = 0;
     for(i=0;i<State.epidemy_count; i++) {
       var id = epi_arrs.length;
       epi_arrs.push([]);
-      var size = (help_deck.length-epi_mod) / State.epidemy_count;
+      var size = (State.help_deck.length-epi_mod) / State.epidemy_count;
       if(i<epi_mod) {
         size++;
       }
       var j=0;
       for(j=0; j<size; j++) {
-        epi_arrs[id].push(help_deck[nTaken++]);
+        epi_arrs[id].push(State.help_deck[nTaken++]);
       }
       epi_arrs[id].push(-13);
       shuffleArr(epi_arrs[id]);
     }
-    help_deck = [];
+    State.help_deck = [];
     for(i=0; i<State.epidemy_count; i++) {
       var j=0;
       for(j=0; j<epi_arrs[i].length; j++) {
-        help_deck.push(epi_arrs[i][j]);
+        State.help_deck.push(epi_arrs[i][j]);
       }
     }
     
@@ -1025,7 +1025,7 @@
     
     var i=0;
     for(i=0; i<State.Players.length; i++) {
-      State.Players[i].acts = ACTS_MAX;
+      State.Players[i].acts = State.ACTS_MAX;
     }
     
     if(State.help_deck.length > 0 && State.help_deck[State.help_deck.length-1] == -13) {
@@ -1281,7 +1281,8 @@
     
     // determine holder
     var cindex = -1;
-    for(int i=0; i<State.Players.length; i++) {
+    var i=0;
+    for(i=0; i<State.Players.length; i++) {
       cindex = State.Players[i].hand.findIndex(match);
       if(cindex >= 0) {
         holder_id = i;
@@ -1303,7 +1304,7 @@
     // determine recipient
     recipient_id = p_id;
     if(recipient_id < 0) {
-      for(int i=0; i<State.Players.length; i++) {
+      for(i=0; i<State.Players.length; i++) {
         if(i != holder_id && State.Players[i].pos == State.Players[State.cur_player].pos) {
           if(recipient_id >= 0) {
             log('There are more than one possible recipients. Choose one of them.');
