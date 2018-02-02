@@ -257,6 +257,8 @@
         return '!FreeLab';
       } else if (card_id == -3) {
         return '!SilentNight';
+      } else if (card_id == -13) {
+        return 'EPIDEMY!';
       }
       
       return '!!!Undefined';
@@ -1467,6 +1469,7 @@
     log('Available commands:');
     log('/help - display available commands (this message);');
     log('/start - starts new game;');
+    log('/ways - available cities for the current player to drive to;');
     log('/drive \'CITY_NAME\' - current player moves to the city next to that player\'s pos;');
     log('/heal <\'COLOR_LETTER\'> - current player heals disease of color, defined by COLOR_LETTER (B for Blue, K - for Black, R - for Red, Y - for yellow), without COLOR_LETTER - disease of the city\'s color;');
     log('/turn - end of turn, next player takes turn;');
