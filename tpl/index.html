@@ -537,7 +537,9 @@
     var arg2 = req_st.arg2;
     var arg3 = req_st.arg3;
 
-    if(cmd == 'start') {
+    if(cmd == 'help') {
+      Help();
+    } else if(cmd == 'start') {
       Init();
     } else if(cmd == 'ways' && State.started) {
       Ways(arg1);
@@ -1459,6 +1461,21 @@
   function Win() {
     log('Congratulations! You\'ve created all of four remedies for each of those deadly disease. Now the World can live in calmness and health.');
     State.started = false;
+  }
+  
+  function Help() {
+    log('Available commands:');
+    log('/help - display available commands (this message);');
+    log('/start - starts new game;');
+    log('/drive \'CITY_NAME\' - current player moves to the city next to that player\'s pos;');
+    log('/heal <\'COLOR_LETTER\'> - current player heals disease of color, defined by COLOR_LETTER (B for Blue, K - for Black, R - for Red, Y - for yellow), without COLOR_LETTER - disease of the city\'s color;');
+    log('/turn - end of turn, next player takes turn;');
+    log('/fly \'CITY_NAME\' - current player moves to the CITY_NAME, using the card of that city;');
+    log('/warp \'CITY_NAME\' - current player moves to any city, using the card of the city that player stands in right now;');
+    log('/remedy \'COLOR_LETTER\' \'EXCLUDE_CARD1\' \'EXCLUDE_CARD2\' - current player invents the remedy in a city with the lab from disease of color indicated by COLOR_LETTER, using cards, excluding EXCLUDE_CARD1 and EXCLUDE_CARD2;');
+    log('/cchange - current player takes or gives the card of the city that player stands in to another player, that stands in that city;');
+    
+    log('/misc_clr - clears the screen.');
   }
   
   // Scientist +
