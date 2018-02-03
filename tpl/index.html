@@ -1511,7 +1511,7 @@
       log('Player positions:');
       var i=0;
       for(i=0; i<State.Players.length; i++) {
-        log('  Player \'' + State.Players[i].name '\' is in the city \'' + State.Towns[State.Players[i].pos].name + '\';');
+        log('  Player \'' + State.Players[i].name + '\' is in the city \'' + State.Towns[State.Players[i].pos].name + '\';');
       }
       bSome = true;
     }
@@ -1520,7 +1520,7 @@
       log('Player classes:');
       var i=0;
       for(i=0; i<State.Players.length; i++) {
-        log('  Player \'' + State.Players[i].name '\' is \'' + State.Classes[State.Players[i].pclass] + '\';');
+        log('  Player \'' + State.Players[i].name + '\' is \'' + State.Classes[State.Players[i].pclass] + '\';');
       }
       bSome = true;
     }
@@ -1530,12 +1530,12 @@
       var i=0;
       for(i=0; i<State.Players.length; i++) {
         if(State.Players[i].hand.length <= 0 ) {
-          log('  Player \'' + State.Players[i].name '\' has no cards in hand.');
+          log('  Player \'' + State.Players[i].name + '\' has no cards in hand.');
         } else {
-          log('  Player \'' + State.Players[i].name '\' has cards:');
+          log('  Player \'' + State.Players[i].name + '\' has cards:');
           var j;
           for(j=0; i<State.Players[i].hand.length; j++) {
-            log('    - \'' + getCardDispName(State.Players[i].hand[j]) '\';');
+            log('    - \'' + getCardDispName(State.Players[i].hand[j]) + '\';');
           }
         }
       }
@@ -1612,7 +1612,7 @@
     }
     
     if(!bSome) {
-      log('Unknown info. Known values are: ' + av_info_arr.toString() ' or empty.');
+      log('Unknown info. Known values are: ' + av_info_arr.toString() + ' or empty.');
     }
   }
   
@@ -1801,7 +1801,7 @@
   // v-prj0.herokuapp.com
 </script>
 <div class="row">
-    <textarea class="form-control" rows="40" id="allOutput" readonly style="padding-left: -60px;padding-right: -60px;width: 100%;min-width: 100%;max-width: 100%; height: 400px;min-height: 400px;max-height: 400px;">Welcome to Digital Pandemic v0.10 beta by Varyier (02.02.2018 4:25 AM). Type '/help' and click sumbit to see available commands.</textarea>
+    <textarea class="form-control" rows="40" id="allOutput" readonly style="padding-left: -60px;padding-right: -60px;width: 100%;min-width: 100%;max-width: 100%; height: 400px;min-height: 400px;max-height: 400px;">Welcome to Digital Pandemic v0.11 beta by Varyier (02.02.2018 4:25 AM). Type '/help' and click sumbit to see available commands.</textarea>
 </div>
 <div class="row" onkeydown="if(event.keyCode==13) { mymain(); }">
     <div class="input-append">
