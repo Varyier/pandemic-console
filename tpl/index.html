@@ -535,8 +535,10 @@
   }
   
   function log(str) {
-      o_val = document.getElementById('allOutput').value;
-      document.getElementById('allOutput').innerHTML = o_val + '\n' + str;
+      var output = document.getElementById('allOutput');
+      var o_val = output.value;
+      output.innerHTML = o_val + '\n' + str;
+      output.scrollTop = output.scrollHeight;
   }
   
   function process() {
@@ -548,7 +550,7 @@
     var game_cmds_arr = ['help', 'start', 'ways', 'where', 'drive', 'fly', 'warp', 'turn', 'heal', 'remedy', 'cchange', 'info', 'setpname', 'classinfo', 'me', 'misc_clr'];
     function match(cmd_name) { return cmd_name == cmd; }
     
-    if(game_cmds_arr.indexOf(match) < 0) {
+    if(game_cmds_arr.findIndex(match) < 0) {
       log('Unknown command. Type \'/help\' to see available commands.');
       return;
     }
@@ -755,6 +757,7 @@
       var p_id = State.Players.length;
       State.Players.push({});
 
+      State.Players[p_id].name = 'Player' + (i+1).toString();
       State.Players[p_id].pclass = classes_left[i];
       State.Players[p_id].hand = [];
       var j=0;
@@ -1633,7 +1636,7 @@
         return cn == c_name;
       }
     
-      var c_id = State.Classes.indexOf(match);
+      var c_id = State.Classes.findIndex(match);
       if(c_id < 0) {
         log('Unknown class name.');
         return;
@@ -1801,7 +1804,7 @@
   // v-prj0.herokuapp.com
 </script>
 <div class="row">
-    <textarea class="form-control" rows="40" id="allOutput" readonly style="padding-left: -60px;padding-right: -60px;width: 100%;min-width: 100%;max-width: 100%; height: 400px;min-height: 400px;max-height: 400px;">Welcome to Digital Pandemic v0.11 beta by Varyier (02.02.2018 4:25 AM). Type '/help' and click sumbit to see available commands.</textarea>
+    <textarea class="form-control" rows="40" id="allOutput" readonly style="padding-left: -60px; padding-right: -60px; width: 100%; min-width: 100%; max-width: 100%; height: 400px; min-height: 400px; max-height: 400px; overflow-y: scroll">Welcome to Digital Pandemic v0.11 beta by Varyier (02.02.2018 4:25 AM). Type '/help' and click sumbit to see available commands.</textarea>
 </div>
 <div class="row" onkeydown="if(event.keyCode==13) { mymain(); }">
     <div class="input-append">
