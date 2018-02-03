@@ -94,6 +94,7 @@
     cur_turn:0,
     cur_player:0,
     first_player:0,
+    players_count:2,
     
     remedyB:false,
     remedyK:false,
@@ -119,7 +120,12 @@
     OUTBR_MAX:7,  // if more - game is lost
     ACTS_MAX:4,
     CARDS_PER_TURN:2,
-    CARDS_PER_PLAYER_START:4
+    CARDS_PER_PLAYER_START:4,
+    PLAYERS_MIN:2,
+    PLAYERS_MAX:4,
+    PLAYERS_START_CARDS_AMOUNT:[4,3,2],
+    LABS_MAX:6,
+    HAND_SIZE_MAX:7
   };
 
   // COMMANDS:
@@ -539,10 +545,18 @@
     var arg2 = req_st.arg2;
     var arg3 = req_st.arg3;
 
+    var game_cmds_arr = ['help', 'start', 'ways', 'where', 'drive', 'fly', 'warp', 'turn', 'heal', 'remedy', 'cchange', 'info', 'setpname', 'classinfo', 'me', 'misc_clr'];
+    function match(cmd_name) { return cmd_name == cmd; }
+    
+    if(game_cmds_arr.indexOf(match) < 0) {
+      log('Unknown command. Type \'/help\' to see available commands.');
+      return;
+    }
+    
     if(cmd == 'help') {
       Help();
     } else if(cmd == 'start') {
-      Init();
+      Init(arg1, arg2);
     } else if(cmd == 'ways' && State.started) {
       Ways(arg1);
     } else if(cmd == 'where' && State.started) {
@@ -562,7 +576,13 @@
     } else if(cmd == 'cchange' && State.started) {
       Cchange(arg1, arg2);
     } else if(cmd == 'info' && State.started) {
-      Info();
+      Info(arg1);
+    } else if(cmd == 'setpname' && State.started) {
+      Setpname(arg1, arg2);
+    } else if(cmd == 'classinfo') {
+      Classinfo(arg1);
+    } else if(cmd == 'me' && State.started) {
+      Classinfo(me);
     } else if(cmd == 'misc_clr') {
       document.getElementById('allOutput').innerHTML = "";
     } else if(cmd == 'misc_rules') {
@@ -601,8 +621,6 @@
       //    'See full rules, for example, here: https://images-cdn.zmangames.com/us-east-1/filer_public/25/12/251252dd-1338-4f78-b90d-afe073c72363/zm7101_pandemic_rules.pdf');
     } else if(!State.started) {
       log('Start the game first.');
-    } else {
-      alert('Invalid command ' + req_st.command);
     }
   }
   
@@ -639,9 +657,45 @@
     }
   }
   
-  function Init() {
+  function Init(pcnt, skill) {
     State.started = false;
 
+    // choose player count
+    if(pcnt == '2') {
+      State.players_count = 2;
+      log('Number of players is 2 - four cards per player on start;');
+    } else if (pcnt == '3') {
+      State.players_count = 3;
+      log('Number of players is 3 - three cards per player on start;');
+    } else if (pcnt == '4') {
+      State.players_count = 4;
+      log('Number of players is 4 - two cards per player on start;');
+    } else if(pcnt == '') {
+      State.players_count = 2;
+      log('Number of players is 2 - four cards per player on start;');      
+    } else {
+      log('Must specify correct number of players: \'2\', \'3\', \'4\' or empty');
+    }
+    
+    // choose skill level
+    if(skill == 'easy') {
+      State.epidemy_count = 4;
+      log('Skill level is EASY - 4 epidemy cards;');
+    } else if (skill == 'medium') {
+      State.epidemy_count = 5;
+      log('Skill level is MEDIUM - 5 epidemy cards;');
+    } else if (skill == 'heroic') {
+      State.epidemy_count = 6;
+      log('Skill level is HEROIC - 6 epidemy cards;');
+    } else if(skill == '') {
+      // default skill is medium
+      State.epidemy_count = 5;
+      log('Skill level is MEDIUM - 5 epidemy cards;');
+    } else {
+      log('Unknown skill level. Use \'easy\', \'medium\', \'heroic\' or empty');
+      return;
+    }
+    
     var i=0;
   
     for(i=0; i<State.Towns.length; i++) {
@@ -695,19 +749,23 @@
     }
     
     shuffleArr(classes_left);
-    for(i=0; i<State.Players.length; i++) {
-      State.Players[i].pclass = classes_left[i];
-      State.Players[i].hand = [];
+
+    State.Players = [];
+    for(i=0; i<State.players_count; i++) {
+      var p_id = State.Players.length;
+      State.Players.push({});
+
+      State.Players[p_id].pclass = classes_left[i];
+      State.Players[p_id].hand = [];
       var j=0;
       for(j=0; j<State.CARDS_PER_PLAYER_START; j++) {
-        drawCards(i);
+        drawCards(p_id);
       }
-      State.Players[i].acts = State.ACTS_MAX;
-      State.Players[i].pos = 0; // Atlanta
+      State.Players[p_id].acts = State.ACTS_MAX;
+      State.Players[p_id].pos = 0; // Atlanta
     }
     
-    // init Epidemies (always four for now)
-    State.epidemy_count = 4;
+    // init Epidemies
     State.epidemy_id = 0;
     
     var epi_arrs = [];
@@ -736,7 +794,7 @@
     }
     
     State.is_silent_night = false;
-    State.dis_marker = 2;
+    State.dis_marker = State.dis_markers[State.epidemy_id];
     State.outbreak_counter = 0;
     State.cur_turn = 0;
     State.first_player = State.cur_player = getRndInteger(0, State.Players.length);
@@ -1039,18 +1097,18 @@
       State.Players[i].acts = State.ACTS_MAX;
     }
     
-    if(State.help_deck.length > 0 && State.help_deck[State.help_deck.length-1] == -13) {
-      State.help_deck.pop();
-      if(!EPIDEMY()) {
-        return;
-      }
-    } else {
-      for(i=0; i<State.CARDS_PER_TURN; i++) {
-        if(!drawCards(State.cur_player)) {
+    for(i=0; i<State.CARDS_PER_TURN; i++) {
+      if(State.help_deck.length > 0 && State.help_deck[State.help_deck.length-1] == -13) {
+        State.help_deck.pop();
+        if(!EPIDEMY()) {
           return;
         }
-        var card_id = State.Players[State.cur_player].hand[State.Players[State.cur_player].hand.length-1];
-        log('Current player draws \'' + getCardDispName(card_id) + '\';');
+      } else {
+          if(!drawCards(State.cur_player)) {
+            return;
+          }
+          var card_id = State.Players[State.cur_player].hand[State.Players[State.cur_player].hand.length-1];
+          log('Current player draws \'' + getCardDispName(card_id) + '\';');
       }
     }
     
@@ -1412,14 +1470,269 @@
     }
   }
   
-  function Info() {
-    log('Detailed game info:');
-    var i=0;
-    for(i=0; i<State.Towns.length; i++) {
-      if(State.Towns[i].disB > 0 || State.Towns[i].disK > 0 || State.Towns[i].disR > 0) {
-        log(getInfectionStrFull(i));
+  function Info(about) {
+    var bSome = false;
+    var av_info_arr = ['infect', 'infect_left', 'pos', 'classes', 'hands', 'labs', 'acts', 'remedy', 'decks'];
+  
+    if(about == 'info' || about == 'keys') {
+      log('Available info: ' + av_info_arr.toString() + ' or empty for full info.');
+      return;
+    }
+  
+    if(about == '') {
+      log('Detailed game info:');
+    }
+    
+    if(about == '' || about == 'infect') {
+      log('Infected cities:');
+      var i=0;
+      for(i=0; i<State.Towns.length; i++) {
+        if(State.Towns[i].disB > 0 || State.Towns[i].disK > 0 || State.Towns[i].disR > 0 || State.Towns[i].disY > 0) {
+          log('  ' + getInfectionStrFull(i));
+        }
+      }
+      
+      log('Epidemies: ' + (State.epidemy_id+1).toString());
+      log('Outbreaks: ' + State.outbreak_counter.toString() + ';');
+      log('Disease marker: ' + State.dis_marker + ';');
+      bSome = true;
+    }
+    
+    if(about == '' || about == 'infect_left') {
+      log('Infection left:');
+      log('  - Blue: ' + (State.DIS_MAX - State.disCntB).toString() + ';');
+      log('  - Black: ' + (State.DIS_MAX - State.disCntK).toString() + ';');
+      log('  - Red: ' + (State.DIS_MAX - State.disCntR).toString() + ';');
+      log('  - Yellow: ' + (State.DIS_MAX - State.disCntY).toString() + ';');
+      bSome = true;
+    }
+    
+    if(about == '' || about == 'pos') {
+      log('Player positions:');
+      var i=0;
+      for(i=0; i<State.Players.length; i++) {
+        log('  Player \'' + State.Players[i].name '\' is in the city \'' + State.Towns[State.Players[i].pos].name + '\';');
+      }
+      bSome = true;
+    }
+    
+    if(about == '' || about == 'classes') {
+      log('Player classes:');
+      var i=0;
+      for(i=0; i<State.Players.length; i++) {
+        log('  Player \'' + State.Players[i].name '\' is \'' + State.Classes[State.Players[i].pclass] + '\';');
+      }
+      bSome = true;
+    }
+    
+    if(about == '' || about == 'hands') {
+      log('Player hands:');
+      var i=0;
+      for(i=0; i<State.Players.length; i++) {
+        if(State.Players[i].hand.length <= 0 ) {
+          log('  Player \'' + State.Players[i].name '\' has no cards in hand.');
+        } else {
+          log('  Player \'' + State.Players[i].name '\' has cards:');
+          var j;
+          for(j=0; i<State.Players[i].hand.length; j++) {
+            log('    - \'' + getCardDispName(State.Players[i].hand[j]) '\';');
+          }
+        }
+      }
+      bSome = true;
+    }
+    
+    if(about == '' || about == 'labs') {
+      log('Player Labs:');
+      var labs_cnt = 0;
+      var i=0;
+      for(i=0; i<State.Towns.length; i++) {
+        if(State.Towns[i].lab) {
+          log('  - \'' + State.Towns[i].name + '\';')
+          labs_cnt++;
+        }
+      }
+      log('  Labs left: ' + (State.LABS_MAX-labs_cnt).toString() + '.')
+      bSome = true;
+    }
+    
+    if(about == '' || about == 'acts') {
+      log('Current player has ' + State.Players[State.cur_player].acts.toString() + ' actions left.');
+      bSome = true;
+    }
+    
+    if(about == '' || about == 'remedy') {
+      log('Remedies:');
+      if(!State.remedyB && !State.remedyK && !State.remedyR && !State.remedyY) {
+        log('  no remedies invented.');
+      } else {
+        if(State.remedyB) {
+          log('  - Blue' + (State.defeatedB ? ' (defeated)' : '') + ';');
+        }
+        if(State.remedyK) {
+          log('  - Black' + (State.defeatedK ? ' (defeated)' : '') + ';');
+        }
+        if(State.remedyR) {
+          log('  - Red' + (State.defeatedR ? ' (defeated)' : '') + ';');
+        }
+        if(State.remedyY) {
+          log('  - Yellow' + (State.defeatedY ? ' (defeated)' : '') + ';');
+        }
+      }
+      bSome = true;
+    }
+    
+    if(about == '' || about == 'decks') {
+      log('Decks:');
+      // help deck
+      log('Help deck has ' + State.help_deck.length.toString() + ' cards.');
+      log('Help deck drop(' + State.help_drop.length + '):');
+      if(State.help_drop.length <= 0) {
+        log('  EMPTY');
+      } else {
+        var i=0;
+        for(i=0; i<State.help_drop.length; i++) {
+          log('  - \'' + getCardDispName(State.help_drop[i]) + '\';');
+        }
+      }
+      
+      // infect deck
+      log('Infect deck has ' + State.infect_deck.length.toString() + ' cards.');
+      log('Infect deck drop(' + State.infect_drop.length + '):');
+      if(State.infect_drop.length <= 0) {
+        log('  EMPTY');
+      } else {
+        var i=0;
+        for(i=0; i<State.help_drop.length; i++) {
+          log('  - \'' + State.Towns[State.help_drop[i]].name + '\';');
+        }
+      }
+      
+      bSome = true;
+    }
+    
+    if(!bSome) {
+      log('Unknown info. Known values are: ' + av_info_arr.toString() ' or empty.');
+    }
+  }
+  
+  // describes the abilities of the certain class
+  function Classinfo(c_name) {
+    // Researcher +
+    // Scientist +
+    // Medic +
+    // Quarantine Specialist +
+  
+    if(State.started && c_name == '') {
+      c_name = State.Classes[State.Players[State.cur_player].pclass];
+    } else if(c_name == 'all' || c_name == '') {
+      // all classes info
+      log('Existing classes:');
+    } else {
+      function match(cn) {
+        return cn == c_name;
+      }
+    
+      var c_id = State.Classes.indexOf(match);
+      if(c_id < 0) {
+        log('Unknown class name.');
+        return;
       }
     }
+    
+    if(c_name == 'Researcher') {
+      log('Researcher:');
+      log(' - As an action Researcher can give any city card to another player, or another player can take any city card from Researcher. Both must be in the same city.');
+    } else if(c_name == 'Scientist') {
+      log('Scientist:');
+      log(' - needs only four cards of one color to invent the remedy for the disease of that color.');
+    } else if(c_name == 'Medic') {
+      log('Medic:');
+      log(' - heals all disease instead of one piece;');
+      log(' - heals all disease automatically and prevents its appearence in the city, the Medic currently is, if the remedy for that disease is invented.');
+    } else if(c_name == 'Quarantine Specialist') {
+      log('Quarantine Specialist:');
+      log(' - prevents the infection of the city, QS stands in, and all cities, that are connected with that city (except initial infect).');
+    } else if(c_name == 'Engeneer') {
+      log('Engeneer (not implemented):');
+      log(' - can build a Lab in the city, Engeneer stands in, as an action (without discarding the card);');
+      log(' - can once per turn, warp to any city, from the current city with Lab, spending action and discarting the card of any city;');
+    } else if(c_name == 'Dispatcher') {
+      log('Dispatcher (not implemented):');
+      log(' - as an action can move any player, as if Dispatcher was this player (drive, fly or warp using the cards in Dispatcher\'s hand);');
+      log(' - as an action can move any player to the position of any other player;');
+    } else if(c_name == 'Contingency Planner') {
+      log('Contingency Planner (not implemented):');
+      log(' - as an action can take any Event card from the discard pile of the Help deck, and use it later, the card is threated as it is removed from the game after that;');
+    } else {
+      log('No info for now.');
+    }
+  }
+  
+  // info about the current player
+  function Me() {
+    log('Current player - \'' + State.Players[State.cur_player].name + '\':');
+    log('  Position: \'' + State.Towns[State.Players[State.cur_player].pos].name + '\';');
+    log('  Actions left: ' + State.Players[State.cur_player].acts.toString() + ';');
+    log('  Hand(' + State.Players[State.cur_player].hand.length + '/' + State.HAND_SIZE_MAX + '):');
+    if(State.Players[State.cur_player].hand.length <= 0) {
+      log('    EMPTY');
+    } else {
+      var i=0;
+      for(i=0; i<State.Players[State.cur_player].hand.length; i++) {
+        log('    - \'' + getCardDispName(State.Players[State.cur_player].hand[j]) + '\';');
+      }
+    }
+    
+    // @TODO: maybe add current Event card for Cont. Planner
+  }
+  
+  function Setpname(p_id_str, p_name) {
+    var p_id = -1;
+
+    if(p_id_str == '1') {
+      p_id = 0;
+    } else if(p_id_str == '2') {
+      p_id = 1;
+    } else if (p_id_str == '3') {
+      p_id = 2;
+    } else if(p_id_str == '4') {
+      p_id = 3;
+    }
+    
+    if(p_id == -1 || p_id >= State.Players.length) {
+      log('You should specify correct player id (between 1 and number of players).');
+      return;
+    }
+
+    if(p_name == '') {
+      log('Player name cannot be empty.');
+      return;
+    }
+    
+    var i=0;
+    for(i=0; i<State.Towns.length; i++) {
+      if(p_name == State.Towns[i].name) {
+        log('Player name cannot match the city name.');
+        return;
+      }
+    }
+    
+    p_id = (State.first_player+p_id)%State.Players.length;
+    
+    for(i=0; i<State.Players.length; i++) {
+      if(p_name == State.Players[i].name) {
+        if(p_id == i) {
+          log('That player already known as \'' + p_name + '\'.');
+        } else {
+          log('Player name is not unique - player \'' + (i+1) + '\' has the same name.');
+        }
+        return;
+      }
+    }
+    
+    log('Player \'' + State.Players[p_id].name + '\' is now known as \'' + p_name + '\'.')
+    State.Players[p_id].name = p_name;
   }
   
   function EPIDEMY() {
@@ -1468,7 +1781,7 @@
   function Help() {
     log('Available commands:');
     log('/help - display available commands (this message);');
-    log('/start - starts new game;');
+    log('/start [players_number] [skill] - starts new game, [players_number] - \'2\', \'3\', \'4\' or empty, [skill] - \'easy\', \'medium\', \'heroic\' or empty;');
     log('/ways - available cities for the current player to drive to;');
     log('/drive \'CITY_NAME\' - current player moves to the city next to that player\'s pos;');
     log('/heal <\'COLOR_LETTER\'> - current player heals disease of color, defined by COLOR_LETTER (B for Blue, K - for Black, R - for Red, Y - for yellow), without COLOR_LETTER - disease of the city\'s color;');
@@ -1477,14 +1790,13 @@
     log('/warp \'CITY_NAME\' - current player moves to any city, using the card of the city that player stands in right now;');
     log('/remedy \'COLOR_LETTER\' \'EXCLUDE_CARD1\' \'EXCLUDE_CARD2\' - current player invents the remedy in a city with the lab from disease of color indicated by COLOR_LETTER, using cards, excluding EXCLUDE_CARD1 and EXCLUDE_CARD2;');
     log('/cchange - current player takes or gives the card of the city that player stands in to another player, that stands in that city;');
+    log('/info [key] - gives detailed game info. Type \'/info keys\' for all available keys.');
+    log('/classinfo [class_name] - information about abilities of classes. Type with empty [class_name] to know the abilities of your class or ([class_name] == all) to know about all classes.');
+    log('/me - detailed info about the current player.');
     
+    log('/setpname [p_id] [p_name] - sets name of the player [p_id] (counting from the first player, first player is number 1) by the [p_name], that cannot be name of the other player or city;');
     log('/misc_clr - clears the screen.');
   }
-  
-  // Scientist +
-  // Quarantine Specialist +
-  // Medic +
-  // Researcher +
   
   // v-prj0.herokuapp.com
 </script>
