@@ -67,7 +67,9 @@
       'Scientist',
       'Medic',
       //'Engeneer',
-      'Quarantine Specialist'
+      'Quarantine Specialist',
+      'Contingency Planner',
+      'Engineer'
     ],
     
     // define two players
@@ -109,6 +111,9 @@
     epidemy_count:6,
     epidemy_id:0,
     
+    cont_planner_card_id:0,
+    engineer_migrate_used:false,
+    
     started:false,
     
     disCntB:0,
@@ -126,6 +131,7 @@
     PLAYERS_START_CARDS_AMOUNT_ARR:[4,3,2],
     LABS_MAX:6,
     HAND_SIZE_MAX:7,
+    EVENT_CARD_COUNT:5,
     
     misc_prev_commands:[],
     misc_prev_command_index:0
@@ -266,6 +272,10 @@
         return '!FreeLab';
       } else if (card_id == -3) {
         return '!SilentNight';
+      } else if (card_id == -4) {
+        return '!Prediction';
+      } else if (card_id == -5) {
+        return '!Immunity';
       } else if (card_id == -13) {
         return 'EPIDEMY!';
       }
@@ -273,6 +283,32 @@
       return '!!!Undefined';
     }
     return State.Towns[card_id].name;
+  }
+  
+  function getCardIdByDispName(card_name) {
+    function match(city) {
+      return city.name == card_name;
+    }
+    
+    var city_index = State.Towns.findIndex(match);
+    if(city_index >= 0) {
+      return city_index;
+    }
+    
+    if(card_name == '!Teleport') {
+      return -1;
+    } else if(card_name == '!FreeLab') {
+      return -2;
+    } else if(card_name == '!SilentNight') {
+      return -3;
+    } else if(card_name == '!Prediction') {
+      return -4;
+    } else if(card_name == '!Immunity') {
+      return -5;
+    }
+    
+    //Epidemy id - error
+    return -13;
   }
   
   function infectTown(t_id, color, already_prop) {
@@ -550,7 +586,7 @@
     var arg2 = req_st.arg2;
     var arg3 = req_st.arg3;
 
-    var game_cmds_arr = ['help', 'start', 'ways', 'where', 'drive', 'fly', 'warp', 'turn', 'heal', 'remedy', 'cchange', 'info', 'setpname', 'classinfo', 'me', 'misc_clr', 'misc_map'];
+    var game_cmds_arr = ['help', 'start', 'ways', 'where', 'drive', 'fly', 'warp', 'turn', 'heal', 'remedy', 'cchange', 'redraw', 'migrate', 'info', 'setpname', 'classinfo', 'me', 'misc_clr', 'misc_map'];
     function match(cmd_name) { return cmd_name == cmd; }
     
     if(game_cmds_arr.findIndex(match) < 0) {
@@ -580,6 +616,10 @@
       Remedy(arg1, arg2, arg3);
     } else if(cmd == 'cchange' && State.started) {
       Cchange(arg1, arg2);
+    } else if(cmd == 'redraw' && State.started) {
+      Redraw(arg1);
+    } else if(cmd == 'migrate' && State.started) {
+      Migrate(arg1, arg2);
     } else if(cmd == 'info' && State.started) {
       Info(arg1);
     } else if(cmd == 'setpname' && State.started) {
@@ -855,6 +895,9 @@
     State.cur_turn = 0;
     State.first_player = State.cur_player = getRndInteger(0, State.Players.length);
     
+    State.cont_planner_card_id = 0;
+    State.engineer_migrate_used = false;
+    
     log('New game started.');
     for(i=0; i<State.Players.length; i++) {
       var str = 'Player';
@@ -1042,7 +1085,7 @@
       str += ';';
       log(str);
       
-      log('Actions left: ' + State.Players[State.cur_player].acts + ';');
+      log('Actions left: ' + State.Players[State.cur_player].acts + '.');
       AutoHeal();
     }
   }
@@ -1087,7 +1130,7 @@
       str += ';';
       log(str);
       
-      log('Actions left: ' + State.Players[State.cur_player].acts + ';');
+      log('Actions left: ' + State.Players[State.cur_player].acts + '.');
       AutoHeal();
     }
   }
@@ -1134,7 +1177,7 @@
       str += ';';
       log(str);
       
-      log('Actions left: ' + State.Players[State.cur_player].acts + ';');
+      log('Actions left: ' + State.Players[State.cur_player].acts + '.');
       AutoHeal();
     }
   }
@@ -1189,6 +1232,7 @@
       }
     }
     
+    State.engineer_migrate_used = false;
     State.cur_player = (State.cur_player+1) % State.Players.length;
     
     if(State.cur_player == State.first_player) {
@@ -1261,7 +1305,7 @@
       State.Players[State.cur_player].acts--;
       log(getInfectionStrFull(pos));
       
-      log('Actions left: ' + State.Players[State.cur_player].acts + ';');
+      log('Actions left: ' + State.Players[State.cur_player].acts + '.');
       KillDiseases();
     }
   }
@@ -1480,6 +1524,70 @@
       log('Researcher gave the card \'' + State.Towns[c_id].name + '\' to ' + State.Players[recipient_id].name + '\'');
     } else {
       log('Exchange performed successfully. Now card \'' + State.Towns[c_id].name + '\' is in hand of the ' + State.Players[recipient_id].name + '\'');
+    }
+  }
+  
+  function Redraw(event_card_name) {
+    var card_id = getCardIdByDispName(event_card_name);
+
+    function match(c_id) {
+      return c_id == card_id;
+    }
+    
+    var card_index = State.help_drop.findIndex(match);
+    if(getPlayerIdByClassName('Contingency Planner') != State.cur_player) {
+      log('Must be Contingency Planner to use this command.');
+    } else if(State.cont_planner_card_id != 0) {
+      log('Already has redrawn card: \'' + getCardDispName(State.cont_planner_card_id) + '\'.');
+    } else if(card_id >= 0 || card_id == -13) {
+      log('Incorrect Event card name.');
+    } else if(card_index < 0) {
+      log('This card is not in the Help deck drop.');
+    } else if(State.Players[State.cur_player].acts <= 0) {
+      log('No actions left.');
+    } else {
+      State.cont_planner_card_id = card_id;
+      State.help_drop[card_index] = State.help_drop[State.help_drop.length-1];
+      State.help_drop.pop();
+      
+      // use get disp name to avoid case mismatch
+      log('Card \'' + getCardDispName(card_id) + '\' was redrawn by Contingency Planner.');
+      log('Actions left: ' + State.Players[State.cur_player].acts + '.');
+    }
+  }
+  
+  function Migrate(where, card_to_drop_name) {
+    var card_id = getCardIdByDispName(card_to_drop_name);
+    
+    function hand_match(c_id) {
+      return c_id == card_id;
+    }
+    
+    var hand_card_index = State.Players[State.cur_player].hand.findIndex(hand_match);
+    var where_id = getCardIdByDispName(where);
+    if(getPlayerIdByClassName('Engineer') != State.cur_player) {
+      log('Must be Engineer to use this command.');
+    } else if(State.engineer_migrate_used) {
+      log('Already used that command this turn. Only one Migrate per turn is allowed.');
+    } else if(!State.Towns[State.Players[State.cur_player].pos].lab) {
+      log('Can use Migrate only from a city with Lab.');
+    } else if(card_id < 0) {
+      log('Incorrect city card name.');
+    } else if(hand_card_index < 0) {
+      log('No such card in your hand.');
+    } else if(where_id < 0) {
+      log('Incorrect destination city name.');
+    } else if(State.Players[State.cur_player].acts <= 0) {
+      log('No actions left.');
+    } else {
+      State.engineer_migrate_used = true;
+      State.Players[State.cur_player].pos = where_id;
+      State.Players[State.cur_player].hand[hand_card_index] =
+      State.Players[State.cur_player].hand[State.Players[State.cur_player].hand.length-1];
+      State.Players[State.cur_player].hand.pop();
+      log('Migration used. Migrated to \'' + where + '\'.');
+      log('Discarded card \'' + card_to_drop_name + '\'.');
+      log('Actions left: ' + State.Players[State.cur_player].acts + '.');
     }
   }
   
@@ -1710,7 +1818,7 @@
       log('Quarantine Specialist:');
       log(' - prevents the infection of the city, QS stands in, and all cities, that are connected with that city (except initial infect).');
     } else if(c_name == 'Engeneer') {
-      log('Engeneer (not implemented):');
+      log('Engeneer:');
       log(' - can build a Lab in the city, Engeneer stands in, as an action (without discarding the card);');
       log(' - can once per turn, warp to any city, from the current city with Lab, spending action and discarting the card of any city;');
     } else if(c_name == 'Dispatcher') {
@@ -1718,7 +1826,7 @@
       log(' - as an action can move any player, as if Dispatcher was this player (drive, fly or warp using the cards in Dispatcher\'s hand);');
       log(' - as an action can move any player to the position of any other player;');
     } else if(c_name == 'Contingency Planner') {
-      log('Contingency Planner (not implemented):');
+      log('Contingency Planner (partialy implemented):');
       log(' - as an action can take any Event card from the discard pile of the Help deck, and use it later, the card is threated as it is removed from the game after that;');
     } else {
       log('No info for now.');
@@ -1847,6 +1955,8 @@
     log('/warp \'CITY_NAME\' - current player moves to any city, using the card of the city that player stands in right now;');
     log('/remedy \'COLOR_LETTER\' \'EXCLUDE_CARD1\' \'EXCLUDE_CARD2\' - current player invents the remedy in a city with the lab from disease of color indicated by COLOR_LETTER, using cards, excluding EXCLUDE_CARD1 and EXCLUDE_CARD2;');
     log('/cchange - current player takes or gives the card of the city that player stands in to another player, that stands in that city;');
+    log('/redraw - (for Contingency Planner) take an Event card from the Help deck drop to use it again.');
+    log('/migrate [dest_city] [city_card_to_drop] - (for Engineer) once per turn move to any city by discarding any city card.');
     log('/info [key] - gives detailed game info. Type \'/info keys\' for all available keys.');
     log('/classinfo [class_name] - information about abilities of classes. Type with empty [class_name] to know the abilities of your class or ([class_name] == all) to know about all classes.');
     log('/me - detailed info about the current player.');
