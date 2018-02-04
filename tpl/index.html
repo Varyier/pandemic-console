@@ -97,6 +97,7 @@
     cur_player:0,
     first_player:0,
     players_count:2,
+    labs_count:0,
     
     remedyB:false,
     remedyK:false,
@@ -586,7 +587,7 @@
     var arg2 = req_st.arg2;
     var arg3 = req_st.arg3;
 
-    var game_cmds_arr = ['help', 'start', 'ways', 'where', 'drive', 'fly', 'warp', 'turn', 'heal', 'remedy', 'cchange', 'redraw', 'migrate', 'info', 'setpname', 'classinfo', 'me', 'misc_clr', 'misc_map'];
+    var game_cmds_arr = ['help', 'start', 'ways', 'where', 'drive', 'fly', 'warp', 'turn', 'heal', 'lab', 'remedy', 'cchange', 'redraw', 'migrate', 'info', 'setpname', 'classinfo', 'me', 'misc_clr', 'misc_map'];
     function match(cmd_name) { return cmd_name == cmd; }
     
     if(game_cmds_arr.findIndex(match) < 0) {
@@ -612,6 +613,8 @@
       Turn();
     } else if(cmd == 'heal' && State.started) {
       Heal(arg1);
+    } else if(cmd == 'lab' && State.started) {
+      Lab(arg1);
     } else if(cmd == 'remedy' && State.started) {
       Remedy(arg1, arg2, arg3);
     } else if(cmd == 'cchange' && State.started) {
@@ -888,6 +891,8 @@
         State.help_deck.push(epi_arrs[i][j]);
       }
     }
+    
+    State.labs_count = 0;
     
     State.is_silent_night = false;
     State.dis_marker = State.dis_markers[State.epidemy_id];
@@ -1310,6 +1315,53 @@
     }
   }
   
+  function Lab(city_name_to_remove_lab) {
+    var pos = State.Players[State.cur_player].pos;
+    var is_engy = State.Classes[State.Players[State.cur_player].pclass] == 'Engineer';
+    var city_id_to_remove_lab = getCardIdByDispName(city_name_to_remove_lab);
+    
+    function hand_match(c_id) {
+      return c_id == pos;
+    }
+    
+    var hand_index = State.Players[State.cur_player].hand.findIndex(hand_match);
+    if(State.Towns[pos].lab) {
+      log('Already has Lab in this city.');
+    } else if(State.labs_count >= State.LABS_MAX) {
+      if(city_name_to_remove_lab == '') {
+        log('Too many Labs on the map (' + State.labs_count.toString() + '/' + State.LABS_MAX.toString() + '). Must specify the city to remove lab to build new.');
+      } else if(city_id_to_remove_lab < 0) {
+        log('Incorrect city name to remove Lab from.');
+      }
+    } else if(State.Players[State.cur_player].acts <= 0) {
+      log('No actions left.');
+    } else if(!is_engy && hand_index < 0) {
+      log('Need the card of the current city to build the Lab.');
+    } else {
+      State.Towns[pos].lab = true;
+      State.Players[State.cur_player].acts--;
+      log('Lab built in \'' + State.Towns[pos].name + '\'.');
+      if(!is_engy) {
+        State.Players[State.cur_player].hand[hand_index] =
+        State.Players[State.cur_player].hand[State.Players[State.cur_player].hand.length-1];
+        State.Players[State.cur_player].hand.pop();
+        log('Discarded city card \'' + State.Towns[pos].name + '\'.');
+      } else {
+        log('Engineer doesn\'t use city cards to build Labs.');
+      }
+      
+      // remove extra Lab
+      if(State.labs_count >= State.LABS_MAX) {
+        State.Towns[city_id_to_remove_lab].lab = false;
+        log('Lab removed from \'' + State.Towns[city_id_to_remove_lab].name + '\'.');
+      } else {
+        State.labs_count++;
+      }
+      
+      log('Actions left: ' + State.Players[State.cur_player].acts + '.');
+    }
+  }
+  
   function Remedy(color, exclude_card1, exclude_card2) {
     if(color != 'B' && color != 'K' && color != 'R' && color != 'Y') {
       log('Wrong color id.');
@@ -1546,6 +1598,7 @@
     } else if(State.Players[State.cur_player].acts <= 0) {
       log('No actions left.');
     } else {
+      State.Players[State.cur_player].acts--;
       State.cont_planner_card_id = card_id;
       State.help_drop[card_index] = State.help_drop[State.help_drop.length-1];
       State.help_drop.pop();
@@ -1581,6 +1634,7 @@
       log('No actions left.');
     } else {
       State.engineer_migrate_used = true;
+      State.Players[State.cur_player].acts--;
       State.Players[State.cur_player].pos = where_id;
       State.Players[State.cur_player].hand[hand_card_index] =
       State.Players[State.cur_player].hand[State.Players[State.cur_player].hand.length-1];
@@ -1708,15 +1762,13 @@
     
     if(about == '' || about == 'labs') {
       log('Player Labs:');
-      var labs_cnt = 0;
       var i=0;
       for(i=0; i<State.Towns.length; i++) {
         if(State.Towns[i].lab) {
           log('  - \'' + State.Towns[i].name + '\';')
-          labs_cnt++;
         }
       }
-      log('  Labs left: ' + (State.LABS_MAX-labs_cnt).toString() + '.')
+      log('  Labs left: ' + (State.LABS_MAX-State.labs_count).toString() + '.')
       bSome = true;
     }
     
@@ -1953,6 +2005,7 @@
     log('/turn - end of turn, next player takes turn;');
     log('/fly \'CITY_NAME\' - current player moves to the CITY_NAME, using the card of that city;');
     log('/warp \'CITY_NAME\' - current player moves to any city, using the card of the city that player stands in right now;');
+    log('/lab [city_name_to_remove_lab] - build a Lab in the current city. Discard the current city card, if not Engineer. Need to specify a city to remove lab from, if labs count exceeded.');
     log('/remedy \'COLOR_LETTER\' \'EXCLUDE_CARD1\' \'EXCLUDE_CARD2\' - current player invents the remedy in a city with the lab from disease of color indicated by COLOR_LETTER, using cards, excluding EXCLUDE_CARD1 and EXCLUDE_CARD2;');
     log('/cchange - current player takes or gives the card of the city that player stands in to another player, that stands in that city;');
     log('/redraw - (for Contingency Planner) take an Event card from the Help deck drop to use it again.');
