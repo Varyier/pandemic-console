@@ -1329,7 +1329,7 @@
       log('Already has Lab in this city.');
     } else if(State.labs_count >= State.LABS_MAX) {
       if(city_name_to_remove_lab == '') {
-        log('Too many Labs on the map (' + State.labs_count.toString() + '/' + State.LABS_MAX.toString() + '). Must specify the city to remove lab to build new.');
+        log('Too many Labs on the map (' + State.labs_count.toString() + '/' + State.LABS_MAX.toString() + '). Must specify the city to remove lab from.');
       } else if(city_id_to_remove_lab < 0) {
         log('Incorrect city name to remove Lab from.');
       }
