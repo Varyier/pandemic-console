@@ -550,7 +550,7 @@
     var arg2 = req_st.arg2;
     var arg3 = req_st.arg3;
 
-    var game_cmds_arr = ['help', 'start', 'ways', 'where', 'drive', 'fly', 'warp', 'turn', 'heal', 'remedy', 'cchange', 'info', 'setpname', 'classinfo', 'me', 'misc_clr'];
+    var game_cmds_arr = ['help', 'start', 'ways', 'where', 'drive', 'fly', 'warp', 'turn', 'heal', 'remedy', 'cchange', 'info', 'setpname', 'classinfo', 'me', 'misc_clr', 'misc_map'];
     function match(cmd_name) { return cmd_name == cmd; }
     
     if(game_cmds_arr.findIndex(match) < 0) {
@@ -590,6 +590,8 @@
       Me();
     } else if(cmd == 'misc_clr') {
       document.getElementById('allOutput').innerHTML = "";
+    } else if(cmd == 'misc_map') {
+      ToggleMap();
     } else if(cmd == 'misc_rules') {
       //log('This is the legendary \'Pandemic\' board game. Here you and your friends is a group of people, who tries to defeat '
       //    'four deadly diseases, that are trying to kill the humanity! You are travelling across the Earth to find the remedy for each disease.\n'
@@ -672,7 +674,7 @@
     document.getElementById('ST').innerHTML = JSON.stringify(State);
   }
   
-function decPrevCmdIndex() {
+  function decPrevCmdIndex() {
     if(document.getElementById('ST').value != '') {
       State = JSON.parse(document.getElementById('ST').value);
     }
@@ -690,6 +692,10 @@ function decPrevCmdIndex() {
     }
     
     document.getElementById('ST').innerHTML = JSON.stringify(State);
+  }
+  
+  function ToggleMap() {
+    document.getElementById('map').hidden = !document.getElementById('map').hidden;
   }
   
   // STUFF
@@ -1847,6 +1853,7 @@ function decPrevCmdIndex() {
     
     log('/setpname [p_id] [p_name] - sets name of the player [p_id] (counting from the first player, first player is number 1) by the [p_name], that cannot be name of the other player or city;');
     log('/misc_clr - clears the screen.');
+    log('/misc_map - makes map visible or not.');
   }
   
   // v-prj0.herokuapp.com
@@ -1860,6 +1867,9 @@ function decPrevCmdIndex() {
         <button class="btn" type="button" onclick="mymain()">Sumbit</button>
         <p id="demo"></p>
     </div>
+</div>
+<div class="row">
+  <img src="world_map.jpg" alt="World Map" id="map" hidden>
 </div>
 <div class="row" hidden>
     <textarea class="form-control" rows="2" id="ST" readonly style="padding-left: -60px;padding-right: -60px;width: 100%;min-width: 100%;max-width: 100%; height: 400px;min-height: 400px;max-height: 400px;"></textarea>
