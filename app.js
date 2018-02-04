@@ -15,6 +15,9 @@ app.get('/', function(req, res){          // Обрабатываем запро
 app.get('/portfolio', function(req, res){ // Обрабатываем запрос страницы "/portfolio"
     res.render('portfolio.html');
 });
+app.get('/world_map.jpg', function(req, res){ // Обрабатываем запрос map
+    res.render('world_map.jpg');
+});
 
 var port = process.env.PORT || 5000;       
 app.listen(port)                           // Запускаем сервер на 5000 порту, если не указана переменная окружения "port" 
