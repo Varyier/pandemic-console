@@ -61,3 +61,7 @@ a.facebook:hover {
     width:30px;
     height:30px;
 }
+
+#map {
+  background-image:url(../img/world_map.jpg);
+}
