@@ -436,6 +436,7 @@
     State.outbreak_counter++;
     if(State.outbreak_counter > State.OUTBR_MAX) {
       Lose('too many outbreaks');
+      return false;
     } else {
       var i=0;
       alert(State.Towns[t_id].ways.toString());
