@@ -4,7 +4,7 @@
     Towns : 
     [
     // Blue - 'B'
-      {name:'Atlanta',        color:'B', ways:[1,38], disB:0,disK:0,disR:0,disY:0, lab:true}, // 0
+      {name:'Atlanta',        color:'B', ways:[1,4,38], disB:0,disK:0,disR:0,disY:0, lab:true}, // 0
       {name:'Chicago',        color:'B', ways:[0,2,3,36,37], disB:0,disK:0,disR:0,disY:0, lab:false}, // 1
       {name:'SanFrancisco',   color:'B', ways:[1,31,34,36], disB:0,disK:0,disR:0,disY:0, lab:false}, // 2
       {name:'Monreal',        color:'B', ways:[1,4,5], disB:0,disK:0,disR:0,disY:0, lab:false}, // 3
@@ -1312,7 +1312,7 @@
         State.help_drop.push(cost_card_id);
       }
       
-      log('Dispatcher has moved \'' + State.Players[who_id].name + '\' to \'' + State.Towns[where_id].name + '\'' + 'using ' + action + '.');
+      log('Dispatcher has moved \'' + State.Players[who_id].name + '\' to \'' + State.Towns[where_id].name + '\' using ' + action + '.');
       if(action == 'Direct flight' || action == 'Chapter flight') {
         log('Discarded card \'' + getCardDispName(cost_card_id) + '\'.');
       }
