@@ -66,10 +66,10 @@
       'Researcher',
       'Scientist',
       'Medic',
-      //'Engeneer',
       'Quarantine Specialist',
       'Contingency Planner',
-      'Engineer'
+      'Engineer',
+      'Dispatcher'
     ],
     
     // define two players
@@ -135,7 +135,8 @@
     EVENT_CARD_COUNT:5,
     
     misc_prev_commands:[],
-    misc_prev_command_index:0
+    misc_prev_command_index:0,
+    misc_multistep_request:false
   };
 
   // COMMANDS:
@@ -158,7 +159,7 @@
   // /warp -E 'NAME' 'SNAME' - (Engeneer Only) teleports current player if he or she stands in a city with Lab,
   //                           to the specified town 'NAME', spends card 'SNAME' (one time per turn)
   // /lwarp 'NAME' - warp to town
-  
+  // /move [who] [where] [cost]
   // /drive 'NAME' - go to a town, that is next to current position
   
   // /cchange <'PLAYER_NAME'> - gives the card of the current town from another player to the current player or backward, must be in that town both
@@ -174,6 +175,8 @@
     arg2:'',
     arg3:''
   };
+  
+  var req_flat = '';
   
   function parse_req(req) {
     req_st.command = '';
@@ -587,7 +590,7 @@
     var arg2 = req_st.arg2;
     var arg3 = req_st.arg3;
 
-    var game_cmds_arr = ['help', 'start', 'ways', 'where', 'drive', 'fly', 'warp', 'turn', 'heal', 'lab', 'remedy', 'cchange', 'redraw', 'migrate', 'info', 'setpname', 'classinfo', 'me', 'misc_clr', 'misc_map'];
+    var game_cmds_arr = ['help', 'start', 'ways', 'where', 'drive', 'fly', 'warp', 'move', 'turn', 'heal', 'lab', 'remedy', 'cchange', 'redraw', 'migrate', 'info', 'setpname', 'classinfo', 'me', 'misc_clr', 'misc_map'];
     function match(cmd_name) { return cmd_name == cmd; }
     
     if(game_cmds_arr.findIndex(match) < 0) {
@@ -609,6 +612,8 @@
       Fly(arg1);
     } else if(cmd == 'warp' && State.started) {
       Warp(arg1, arg2, arg3);
+    } else if(cmd == 'move' && State.started) {
+      Move(arg1, arg2, arg3);
     } else if(cmd == 'turn' && State.started) {
       Turn();
     } else if(cmd == 'heal' && State.started) {
@@ -1182,6 +1187,135 @@
       str += ';';
       log(str);
       
+      log('Actions left: ' + State.Players[State.cur_player].acts + '.');
+      AutoHeal();
+    }
+  }
+  
+  function Move(who, where, cost) {
+    var who_id = getPlayerIdByName(who);
+    
+    var where_player = false;
+    var where_id = getCardIdByDispName(where);
+    
+    if(where_id == -13) {
+      where_id = getPlayerIdByName(where);
+      where_player = true;
+      if(where_id >= 0) {
+        where_id = State.Players[where_id].pos;
+      }
+    }
+    
+    var cost_id = getCardIdByDispName(cost);
+    
+    if(getPlayerIdByClassName('Dispatcher') != State.cur_player) {
+      log('Must be Dispatcher to use this command.');
+    } else if(who_id < 0) {
+      log('Incorrect player name to move.');
+    } else if(where_id < 0) {
+      log('Incorrect destination. Second argument must specify the player or the city to move to.');
+    } else if(State.Players[who_id].pos == where_id) {
+      log('Cannot move player to his or her current position.');
+    } else if(State.Players[State.cur_player].acts <= 0) {
+      log('No actions left.');
+    } else {
+      var action = '';
+    
+      function match(c_id) {
+        return c_id == where_id;
+      }
+    
+      function pos_match(pl) {
+        return pl.pos == where_id;
+      }
+    
+      var hand_index = -1;
+      var cost_card_id = getCardIdByDispName(cost);
+      // choose the cheapest action (maybe with spending a card): move to player, drive, direct or chapter flight
+      if(State.Towns[State.Players[who_id].pos].ways.findIndex(match) >= 0) {
+        // Drive
+        action = 'Drive';
+      } else if(State.Players.findIndex(pos_match) >= 0) {
+        // move to player (Bring)
+        action = 'Bring';
+      } else {
+        // search hand for a card
+        var cur_pos = State.Players[who_id].pos;
+        var dest_pos = where_id;
+        
+        function dir_match(c_id) {
+          return c_id == dest_pos;
+        }
+
+        function cha_match(c_id) {
+          return c_id == cur_pos;
+        }
+        
+        var dir_flight_card_index = State.Players[State.cur_player].hand.findIndex(dir_match);
+        var cha_flight_card_index = State.Players[State.cur_player].hand.findIndex(cha_match);
+        
+        if(dir_flight_card_index < 0 && cha_flight_card_index < 0) {
+          // no required card
+          log('This action requires a card: \'' + getCardDispName(dest_pos) + '\' or \'' + getCardDispName(cur_pos) + '\'.');
+          return;
+        } else if(dir_flight_card_index < 0 && !(cha_flight_card_index < 0)) {
+          // chapter flight (check cost)
+          if(cost != '' && cost_card_id != cur_pos) {
+            log('Cost doesn\'t match the required action (need \'' + getCardDispName(cur_pos) + '\').');
+            return;
+          }
+          action = 'Chapter flight';
+          cost_card_id = cur_pos;
+          hand_index = cha_flight_card_index;
+        } else if(cha_flight_card_index < 0 && !(dir_flight_card_index < 0)) {
+          // direct flight (check cost)
+          if(cost != '' && cost_card_id != dest_pos) {
+            log('Cost doesn\'t match the required action (need \'' + getCardDispName(dest_pos) + '\').');
+            return;
+          }
+          action = 'Direct flight';
+          cost_card_id = dest_pos;
+          hand_index = dir_flight_card_index;
+        } else {
+          // has both cards - choose by cost
+          if(cost_card_id == dest_pos) {
+            action = 'Direct flight';
+            hand_index = dir_flight_card_index;
+          } else if(cost_card_id == cur_pos) {
+            action = 'Chapter flight';
+            hand_index = cha_flight_card_index;
+          } else {
+            // bad cost
+            log('Cost is not specified or doesn\'t match the required action (need \'' + getCardDispName(dest_pos) + '\' or \'' + getCardDispName(cur_pos) + '\').');
+            return;
+          }
+        }
+      }
+    
+      if(action == '') {
+        log('UERR: Cannot determine move action.');
+        return;
+      }
+    
+      State.Players[State.cur_player].acts--;
+      State.Players[who_id].pos = where_id;
+      if(action == 'Direct flight' || action == 'Chapter flight') {
+        // discard a card as cost
+        if(hand_index < 0 || cost_card_id < 0) {
+          log('UERR: Cannot choose card from hand to pay cost.');
+          return;
+        }
+      
+        State.Players[State.cur_player].hand[hand_index] =
+        State.Players[State.cur_player].hand[State.Players[State.cur_player].hand.length-1];
+        State.Players[State.cur_player].hand.pop();
+        State.help_drop.push(cost_card_id);
+      }
+      
+      log('Dispatcher has moved \'' + State.Players[who_id].name + '\' to \'' + State.Towns[where_id].name + '\'' + 'using ' + action + '.');
+      if(action == 'Direct flight' || action == 'Chapter flight') {
+        log('Discarded card \'' + getCardDispName(cost_card_id) + '\'.');
+      }
       log('Actions left: ' + State.Players[State.cur_player].acts + '.');
       AutoHeal();
     }
@@ -2005,6 +2139,7 @@
     log('/turn - end of turn, next player takes turn;');
     log('/fly \'CITY_NAME\' - current player moves to the CITY_NAME, using the card of that city;');
     log('/warp \'CITY_NAME\' - current player moves to any city, using the card of the city that player stands in right now;');
+    log('/move [who] [where_city_or_player] [cost] - (Dispatcher only) moves a player [who] to the city, using Drive, Direct or Chapter flight or to another player (Bring). Chooses the cheapest option. Cost (city card name) specifies, which flight to choose if can perform both.');
     log('/lab [city_name_to_remove_lab] - build a Lab in the current city. Discard the current city card, if not Engineer. Need to specify a city to remove lab from, if labs count exceeded.');
     log('/remedy \'COLOR_LETTER\' \'EXCLUDE_CARD1\' \'EXCLUDE_CARD2\' - current player invents the remedy in a city with the lab from disease of color indicated by COLOR_LETTER, using cards, excluding EXCLUDE_CARD1 and EXCLUDE_CARD2;');
     log('/cchange - current player takes or gives the card of the city that player stands in to another player, that stands in that city;');
