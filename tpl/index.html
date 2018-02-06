@@ -574,12 +574,35 @@
   }
   
   function process() {
+    var RULES_REF = 'http://v-prj0.herokuapp.com/doc/rules.pdf';
+  
     var cmd = req_st.command;
     var arg1 = req_st.arg1;
     var arg2 = req_st.arg2;
     var arg3 = req_st.arg3;
 
-    var game_cmds_arr = ['help', 'start', 'ways', 'where', 'drive', 'fly', 'warp', 'move', 'turn', 'heal', 'lab', 'remedy', 'cchange', 'redraw', 'migrate', 'info', 'setpname', 'classinfo', 'me', 'misc_clr', 'misc_map'];
+    var game_cmds_arr = ['help',
+                         'start',
+                         'ways',
+                         'where',
+                         'drive',
+                         'fly',
+                         'warp',
+                         'move',
+                         'turn',
+                         'heal',
+                         'lab',
+                         'remedy',
+                         'cchange',
+                         'redraw',
+                         'migrate',
+                         'info',
+                         'setpname',
+                         'classinfo',
+                         'me',
+                         'misc_clr',
+                         'misc_map',
+                         'misc_rules'];
     function match(cmd_name) { return cmd_name == cmd; }
 
     if(game_cmds_arr.findIndex(match) < 0) {
@@ -630,6 +653,7 @@
     } else if(cmd == 'misc_map') {
       ToggleMap();
     } else if(cmd == 'misc_rules') {
+      log('See rules at \'' + RULES_REF + '\'.');
       //log('This is the legendary \'Pandemic\' board game. Here you and your friends is a group of people, who tries to defeat '
       //    'four deadly diseases, that are trying to kill the humanity! You are travelling across the Earth to find the remedy for each disease.\n'
       //    '  The Earth is divided into several cities, that are connected with several roads. There are four diseases (Red, Yellow, Blue and Black), and four city kinds,'
@@ -2147,10 +2171,10 @@
     log('/setpname [p_id] [p_name] - sets name of the player [p_id] (counting from the first player, first player is number 1) by the [p_name], that cannot be name of the other player or city;');
     log('/misc_clr - clears the screen.');
     log('/misc_map - makes map visible or not.');
+    log('/misc_rules - game rules.');
   }
   
   // v-prj0.herokuapp.com
-  // http://csolsqs.com/pandemic/pandemic-006.jpg
 </script>
 <div class="row">
     <textarea class="form-control" rows="40" id="allOutput" readonly style="padding-left: -60px; padding-right: -60px; width: 100%; min-width: 100%; max-width: 100%; height: 400px; min-height: 400px; max-height: 400px; overflow-y: scroll">Welcome to Digital Pandemic v0.11 beta by Varyier (02.02.2018 4:25 AM). Type '/help' and click sumbit to see available commands.</textarea>
