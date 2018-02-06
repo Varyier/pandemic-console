@@ -180,16 +180,23 @@
   
   function parse_req(req) {
     req_st.command = '';
-    if(req.indexOf('/') != 0) {
+    req_st.arg1 = '';
+    req_st.arg2 = '';
+    req_st.arg3 = '';
+    
+    var inner_req = inner_req.trim();
+    if(inner_req == '') {
+      return;
+    } else if(inner_req.indexOf('/') != 0) {
       alert('Wrong request. Type \'/help\' for more info.');
     } else {
-      var pos_cmd_delim = req.indexOf(' ');
+      var pos_cmd_delim = inner_req.indexOf(' ');
       if(pos_cmd_delim == -1) {
         // no args
-        req_st.command = req.slice(1, req.length);
+        req_st.command = inner_req.slice(1, inner_req.length);
       } else {
         // with args, probably
-        req_st.command = req.slice(1, pos_cmd_delim);
+        req_st.command = inner_req.slice(1, pos_cmd_delim);
       }
       
       req_st.arg1 = '';
@@ -197,7 +204,7 @@
       req_st.arg3 = '';
       
       if(pos_cmd_delim != -1) {
-        var req_cut = req.slice(pos_cmd_delim+1, req.length);
+        var req_cut = inner_req.slice(pos_cmd_delim+1, inner_req.length);
         if(req_cut.length > 0) {        
           // at least 1 arg
           var pos_arg1_delim = req_cut.indexOf(' ');
