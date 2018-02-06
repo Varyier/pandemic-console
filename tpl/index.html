@@ -672,7 +672,7 @@
   function mymain() {
     i_val = document.getElementById('mainInput').value;
     document.getElementById('mainInput').value = '';
-    log('\n' + '>> ' + i_val);
+    log('>> ' + i_val);
     if(i_val.length > 0) {
       parse_req(i_val);
       if(req_st.command.length > 0) {
