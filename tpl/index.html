@@ -444,6 +444,7 @@
         if(!infectTown(State.Towns[t_id].ways[i], color, already_prop)) {
           return false;
         }
+        log(getInfectionStrFull(State.Towns[t_id].ways[i]));
       }
     }
     
@@ -2085,7 +2086,7 @@
     State.infect_drop.push(infect);
     State.infect_deck.shift();
     
-    log('New city \'' + State.Towns[infect].name + '\' is infected.');
+    log('New city \'' + State.Towns[infect].name + '\' is infected by 3 \'' + State.Towns[infect].color + '\'.');
     
     var arr = [];
     var i=0;
