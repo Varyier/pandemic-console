@@ -184,7 +184,7 @@
     req_st.arg2 = '';
     req_st.arg3 = '';
     
-    var inner_req = inner_req.trim();
+    var inner_req = req.trim();
     if(inner_req == '') {
       return;
     } else if(inner_req.indexOf('/') != 0) {
@@ -582,7 +582,7 @@
 
     var game_cmds_arr = ['help', 'start', 'ways', 'where', 'drive', 'fly', 'warp', 'move', 'turn', 'heal', 'lab', 'remedy', 'cchange', 'redraw', 'migrate', 'info', 'setpname', 'classinfo', 'me', 'misc_clr', 'misc_map'];
     function match(cmd_name) { return cmd_name == cmd; }
-    
+
     if(game_cmds_arr.findIndex(match) < 0) {
       log('Unknown command. Type \'/help\' to see available commands.');
       return;
