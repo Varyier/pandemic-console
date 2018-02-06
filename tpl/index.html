@@ -671,10 +671,10 @@
   
   function mymain() {
     i_val = document.getElementById('mainInput').value;
+    o_val = document.getElementById('allOutput').value;
+    document.getElementById('allOutput').innerHTML = o_val + '\n' + '>> ' + i_val;
+    document.getElementById('mainInput').value = '';
     if(i_val.length > 0) {
-      o_val = document.getElementById('allOutput').value;
-      document.getElementById('allOutput').innerHTML = o_val + '\n' + '>> ' + i_val;
-      document.getElementById('mainInput').value = '';
       parse_req(i_val);
       if(req_st.command.length > 0) {
         // load game state
