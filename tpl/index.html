@@ -446,7 +446,6 @@
       return false;
     } else {
       var i=0;
-      alert(State.Towns[t_id].ways.toString());
       for(i=0; i<State.Towns[t_id].ways.length; i++) {
         if(!infectTown(State.Towns[t_id].ways[i], color, already_prop)) {
           return false;
