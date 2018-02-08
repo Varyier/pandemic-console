@@ -581,6 +581,7 @@
   
   function process() {
     var RULES_REF = 'http://v-prj0.herokuapp.com/doc/rules.pdf';
+    var THIS_SITE = 'http://v-prj0.herokuapp.com/';
   
     var cmd = req_st.command;
     var arg1 = req_st.arg1;
@@ -609,7 +610,8 @@
                          'me',
                          'misc_clr',
                          'misc_map',
-                         'misc_rules'];
+                         'misc_rules',
+                         'misc_about'];
     function match(cmd_name) { return cmd_name == cmd; }
 
     if(game_cmds_arr.findIndex(match) < 0) {
@@ -696,6 +698,14 @@
       //    'Type \'/heal \'COLOR_ID\'\''
           
       //    'See full rules, for example, here: https://images-cdn.zmangames.com/us-east-1/filer_public/25/12/251252dd-1338-4f78-b90d-afe073c72363/zm7101_pandemic_rules.pdf');
+    } else if(cmd == 'misc_about') {
+      log('Product: digital Pandemic.');
+      log('Version: pre-release 1(v0.2)');
+      log('Author: Varyier');
+      log('E-mail: attervip@yandex.ru');
+      log('Location site: ' + THIS_SITE);
+      log('Date(first version): 09.02.2018');
+      log('Date(release): -');
     } else if(!State.started) {
       log('Start the game first.');
     }
@@ -2639,6 +2649,7 @@
     log('/misc_clr - clears the screen.');
     log('/misc_map - makes map visible or not.');
     log('/misc_rules - game rules.');
+    log('/misc_about - readme.');
   }
   
   // v-prj0.herokuapp.com
