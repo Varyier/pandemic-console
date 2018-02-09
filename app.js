@@ -15,8 +15,8 @@ app.get('/', function(req, res){          // Обрабатываем запро
 app.get('/portfolio', function(req, res){ // Обрабатываем запрос страницы "/portfolio"
     res.render('portfolio.html');
 });
-app.get('/world_map.jpg', function(req, res){ // Обрабатываем запрос map
-    res.render('world_map.jpg');
+app.get('/standalone', function(req, res){
+    res.render('standalone.html');
 });
 
 var port = process.env.PORT || 5000;       
