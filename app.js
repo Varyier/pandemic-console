@@ -674,7 +674,7 @@ app.post('/req', function(req, res) {
       log('Start the game first.');
     }
     
-    if(!State.misc_nospread) {
+    if(cmd != 'start' && !State.misc_nospread) {
       State.misc_gcd = (State.misc_gcd+1) % State.MISC_GCD_MAX;
     }
   }
