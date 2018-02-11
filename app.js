@@ -2682,15 +2682,10 @@ app.post('/req', function(req, res) {
     var i=0;
     var str = '';
     
-    for(i=q.gcd; i<History.length; i++) {
+    for(i=q.gcd; i<History.length-1; i++) {
       str += History[i];
-      if(i<History.length-1) {
+      if(i<History.length-2) {
         str += '\n';
-      } else {
-        if(!State.misc_nospread) {
-          // exclude duplicates
-          break;
-        }
       }
     }
     
