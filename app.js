@@ -18,6 +18,14 @@ app.get('/', function(req, res){          // Обрабатываем запро
 });
 app.get('/portfolio', function(req, res){ // Обрабатываем запрос страницы "/portfolio"
     res.render('portfolio.html');
+    
+    var arr = ['1', '2', '3'];
+    
+    function match(str) {
+      return str == '2';
+    }
+    
+    var index = arr.findIndex(match);
 });
 app.get('/standalone', function(req, res){
     res.render('standalone.html');
