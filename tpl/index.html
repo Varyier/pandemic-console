@@ -21,6 +21,9 @@
       if (this.readyState == 4 && this.status == 200) {
           log(this.responseText);
       }
+      
+      // DEBUG
+      log(this.readyState);
     };
     
     // server request
@@ -29,12 +32,18 @@
       return;
     }
     
+    // DEBUG
+    log('req_made');
+    
     if(ProcessLocal(i_val, req_str)) {
       return;
     }
+
+    // DEBUG
+    log('req_notlocal');
     
     xhttp.open('POST', req_str, true);
-    xhttp.send(); 
+    xhttp.send();
   }
   
   function MakeRequest(input_str, req_str) {
