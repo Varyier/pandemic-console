@@ -550,7 +550,7 @@ app.post('/req', function(req, res) {
       //var o_val = output.value;
       //output.innerHTML = o_val + '\n' + str;
       //output.scrollTop = output.scrollHeight;
-      Ans.push(str + '\n');
+      Ans.push(str);
   }
 
   function process_main() {
