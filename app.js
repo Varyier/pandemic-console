@@ -2689,7 +2689,12 @@ app.post('/req', function(req, res) {
       }
     }
     
-    Ans = str;
+    if(Ans == '') {
+      Ans = str;
+    } else if(str != '') {
+      Ans = str + '\n' + Ans;
+    }
+    
   }
 
   var ans_json = {gcd:-1, text:''};
