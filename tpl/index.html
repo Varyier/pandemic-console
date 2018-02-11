@@ -34,6 +34,7 @@
     
     // DEBUG
     log('req_made');
+    log('REQ: ' + req_str);
     
     if(ProcessLocal(i_val, req_str)) {
       return;
@@ -42,8 +43,7 @@
     // DEBUG
     log('req_notlocal');
     
-    //xhttp.open('POST', req_str, true);
-    xhttp.open('POST', '/test1', true);
+    xhttp.open('POST', req_str, true);
     xhttp.send();
   }
   
