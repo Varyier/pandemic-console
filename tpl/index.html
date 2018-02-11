@@ -29,7 +29,6 @@
       if (this.readyState == 4) {
           if(this.status == 200) {
             var res_json = JSON.parse(this.responseText);
-            alert(this.responseText);
             log(res_json.text);
             LocalState.misc_gcd = res_json.gcd;
           }
