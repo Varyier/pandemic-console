@@ -673,6 +673,9 @@ app.post('/req', function(req, res) {
   }
 
   function Init(pcnt, skill) {
+    // DEBUG
+    console.log('GAME STARTED');
+  
     State.started = false;
 
     // choose player count
