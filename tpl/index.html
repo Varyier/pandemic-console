@@ -112,6 +112,7 @@
     if(remote_req_st.ts.length > 0) {
       if(asym) { req_str += '&'; }
       req_str += ('l=' + remote_req_st.ts.length);
+      asym = true;
     }
     
     var i=0;
@@ -119,17 +120,20 @@
       if(remote_req_st.ts[i].v != '') {
         if(asym) { req_str += '&'; }
         req_str += ('t' + (i+1) + '=' + remote_req_st.ts[i].v);
+        asym = true;
       }
       
       if(remote_req_st.ts[i].ec) {
         if(asym) { req_str += '&'; }
         req_str += ('ec' + (i+1) + '=true');
+        asym = true;
       }
     }
     
     // add generation code
     if(asym) { req_str += '&'; }
     req_str += ('gcd=' + LocalState.misc_gcd);
+    asym = true;
     
     return true;
   }
