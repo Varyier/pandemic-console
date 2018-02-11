@@ -2676,7 +2676,7 @@ app.post('/req', function(req, res) {
     //});
   }
   
-  if(q.gcd != undefined && (State.misc_gcd-q.gcd) > 1) {
+  if(q.gcd != undefined && q.gcd < State.misc_gcd) {
     // add history to let all users see
     // actions, performed by all other users
     var i=0;
@@ -2686,6 +2686,11 @@ app.post('/req', function(req, res) {
       str += History[i];
       if(i<History.length-1) {
         str += '\n';
+      } else {
+        if(!State.misc_nospread) {
+          // exclude duplicates
+          break;
+        }
       }
     }
     
@@ -2694,7 +2699,6 @@ app.post('/req', function(req, res) {
     } else if(str != '') {
       Ans = str + '\n' + Ans;
     }
-    
   }
 
   var ans_json = {gcd:-1, text:''};
