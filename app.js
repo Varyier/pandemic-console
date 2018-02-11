@@ -200,13 +200,113 @@ var State = {
 // /remedy 'X' 'NAME1', 'NAME2' - invent the remedy from the specified disease 'X', using two cards 'NAME1', 'NAME2'
 // /turn - end the turn
 
-var MAIN = {
 
-function getRndInteger(min, max) {
-  return Math.floor(Math.random() * (max - min) ) + min;
-}
+app.post('/req', function(req, res) {
+  //var storage_path = 'public/doc/State.json'
 
-};
+  Ans = [];
+
+  var req_st = {
+    command:'',
+    arg1:'',
+    arg2:'',
+    arg3:''
+  };
+
+  var req_flat = '';
+
+  // parse request
+  var q = url.parse(req.url, true).query;
+  if(q.cmd != undefined) {
+    // structured
+    req_st.command = q.cmd;
+    if(q.l != undefined) {
+      var length = q.l;
+      var i=0;
+      for(i=0; i<length; i++) {
+        var tn = 't' + (i+1);
+        var ecn = 'ec' + (i+1);
+        var arg = '';
+        
+        if(q[tn] != undefined) {
+          if(q[ecn] != undefined) {
+            arg += '!';
+          }
+          arg += q[tn];
+        }
+        
+        req_st['arg'+(i+1)] = arg;
+        
+        if(i >= 3) {
+          // only 3 args allowed
+          break;
+        }
+      }
+    }
+  } else {
+    // flat
+    if(q.l != undefined) {
+      var length = q.l;
+      var i=0;
+      for(i=0; i<length; i++) {
+        var tn = 't' + (i+1);
+        var ecn = 'ec' + (i+1);
+        var arg = '';
+        
+        if(q[tn] != undefined) {
+          if(q[ecn] != undefined) {
+            arg += '!';
+          }
+          arg += q[tn];
+        }
+        
+        req_flat += '\'';
+        req_flat += arg;
+        req_flat += '\'';
+        req_flat += ' ';
+      }
+    }
+  }
+  
+  if(req_st.command.length > 0 || req_flat != '') {
+    // load game state
+  //  fs.readFile(storage_path, function(err, data) {
+  //      if (err) throw err;
+  //      State = JSON.parse(data);
+  //  });
+    
+    if(State.misc_multistep_request) {
+      //log('Input command arguments:');
+////      if(process_tail()) {
+////        State.misc_multistep_request = false;
+////      }
+    } else {
+      
+      // process one step (command)
+////      process();
+    }
+    
+    // store game state
+    //var odata = JSON.stringify(State);
+    
+    //fs.writeFile(storage_path, odata, function(err) {
+    //  if (err) throw err;
+    //});
+  }
+  
+  var ans_str = '';
+  var i=0;
+  for(i=0; i<Ans.length; i++) {
+    ans_str += Ans[i];
+    if(i<Ans.length-1) {
+      ans_str += '\n';
+    }
+  }
+  
+  res.writeHead(200, {});
+  res.write(ans_str);
+  return res.end();
+});
 
 var port = process.env.PORT || 5000;       
 //var port = 5000;
