@@ -6,10 +6,10 @@
   };
 
   var req_str = '';
-  var gcd_update_interval_id = setInterval(UpdateGcdAsync, 2000);
+  var gcd_update_interval_id = -1;
   
   function mymain() {
-    if(gcd_update_interval_id < 0) {
+    if(gcd_update_interval_id >= 0) {
       clearInterval(gcd_update_interval_id);
     }
   
