@@ -23,10 +23,6 @@ app.get('/standalone', function(req, res){
     res.render('standalone.html');
 });
 
-var port = process.env.PORT || 5000;       
-app.listen(port)                           // Запускаем сервер на 5000 порту, если не указана переменная окружения "port" 
-console.log("Listening at " + port)        // Пишем в консоль, что запустились
-
 var Ans = [];
 
 // -----------------------------------------------------------------
@@ -2806,3 +2802,7 @@ app.post('/req', function(req, res) {
 //      if (err) throw err;
 //    });  
 //})
+
+var port = process.env.PORT || 5000;       
+app.listen(port)                           // Запускаем сервер на 5000 порту, если не указана переменная окружения "port" 
+console.log("Listening at " + port)        // Пишем в консоль, что запустились
