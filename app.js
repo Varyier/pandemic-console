@@ -13,10 +13,7 @@ app.configure(function() {
     app.use(express.static(__dirname + "/public"));     // Делаем файлы из папки public доступными на сайте
 });
 
-app.get('/', function(req, res){          // Обрабатываем запрос корневой страницы "/"
-    // DEBUG
-    console.log('GETGETGET!!!');
-    
+app.get('/', function(req, res){          // Обрабатываем запрос корневой страницы "/"  
     res.render('index.html');
 });
 app.get('/portfolio', function(req, res){ // Обрабатываем запрос страницы "/portfolio"
@@ -26,10 +23,10 @@ app.get('/standalone', function(req, res){
     res.render('standalone.html');
 });
 
-app.post('/test1', function(req, res){
-    console.log('TSET!');
-    return res.end();
-});
+//app.post('/test1', function(req, res){
+//    console.log('TSET!');
+//    return res.end();
+//});
 
 var Ans = [];
 
