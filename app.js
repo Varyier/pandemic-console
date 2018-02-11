@@ -14,6 +14,9 @@ app.configure(function() {
 });
 
 app.get('/', function(req, res){          // Обрабатываем запрос корневой страницы "/"
+    // DEBUG
+    console.log('GETGETGET!!!');
+    
     res.render('index.html');
 });
 app.get('/portfolio', function(req, res){ // Обрабатываем запрос страницы "/portfolio"
