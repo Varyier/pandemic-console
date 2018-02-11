@@ -23,6 +23,11 @@ app.get('/standalone', function(req, res){
     res.render('standalone.html');
 });
 
+app.post('/test1', function(req, res){
+    console.log('TSET!');
+    return res.end();
+});
+
 var Ans = [];
 
 // -----------------------------------------------------------------
