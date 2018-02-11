@@ -2672,7 +2672,7 @@ app.post('/req', function(req, res) {
     //});
   }
   
-  if(q.gcd != undefined) {
+  if(q.gcd != undefined && q.gcd < State.misc_gcd) {
     // add history to let all users see
     // actions, performed by all other users
     var i=0;
