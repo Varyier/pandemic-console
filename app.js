@@ -2701,7 +2701,7 @@ app.post('/gcd', function(req, res) {
   var q = url.parse(req.url, true).query;
   var str = '';
   
-  if(q.v != undefined) {
+  if(q.v != undefined && q.v < State.misc_gcd) {
     var i=0;
     for(i=q.v; i<History.length; i++) {
       str += History[i];
