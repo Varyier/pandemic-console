@@ -18,14 +18,6 @@ app.get('/', function(req, res){          // Обрабатываем запро
 });
 app.get('/portfolio', function(req, res){ // Обрабатываем запрос страницы "/portfolio"
     res.render('portfolio.html');
-    
-    var arr = ['1', '2', '3'];
-    
-    function match(str) {
-      return str == '2';
-    }
-    
-    var index = arr.findIndex(match);
 });
 app.get('/standalone', function(req, res){
     res.render('standalone.html');
@@ -267,11 +259,16 @@ app.post('/req', function(req, res) {
   }
 
   function getCardIdByDispName(card_name) {
-    function match(city) {
-      return city.name == card_name;
-    }
+    var fi1 = 0;
+    var city_index = -1;
     
-    var city_index = State.Towns.findIndex(match);
+    for(fi1=0; fi1<State.Towns.length; fi1++) {
+      if(State.Towns[fi1].name == card_name) {
+        city_index = fi1;
+        break;
+      }
+    }
+
     if(city_index >= 0) {
       return city_index;
     }
@@ -333,14 +330,22 @@ app.post('/req', function(req, res) {
       }
     }
 
-    function match(elem) {
-      return elem == t_id;
+    function match_raw(arr) {
+      var fi1 = 0;
+      for(fi1=0; fi1<arr.length; fi1++) {
+        if(arr[fi1] == t_id) {
+          return fi1;
+        }
+      }
+      
+      return -1;
     }
+    
     
     if(!State.defeatedB && color == 'B') {
       if(State.Towns[t_id].disB >= 3) {
         State.Towns[t_id].disB = 3;
-        if(already_prop.findIndex(match) < 0) {
+        if(match_raw(already_prop) < 0) {
           if(!outbrDisease(t_id, color, already_prop)) {
             return false;
           }
@@ -356,7 +361,7 @@ app.post('/req', function(req, res) {
     } else if (!State.defeatedK && color == 'K') {
       if(State.Towns[t_id].disK >= 3) {
         State.Towns[t_id].disK = 3;
-        if(already_prop.findIndex(match) < 0) {
+        if(match_raw(already_prop) < 0) {
           if(!outbrDisease(t_id, color, already_prop)) {
             return false;
           }
@@ -372,7 +377,7 @@ app.post('/req', function(req, res) {
     } else if (!State.defeatedR && color == 'R') {
       if(State.Towns[t_id].disR >= 3) {
         State.Towns[t_id].disR = 3;
-        if(already_prop.findIndex(match) < 0) {
+        if(match_raw(already_prop) < 0) {
           if(!outbrDisease(t_id, color, already_prop)) {
             return false;
           }
@@ -388,7 +393,7 @@ app.post('/req', function(req, res) {
     } else if (!State.defeatedY && color == 'Y') {
       if(State.Towns[t_id].disY >= 3) {
         State.Towns[t_id].disY = 3;
-        if(already_prop.findIndex(match) < 0) {
+        if(match_raw(already_prop) < 0) {
           if(!outbrDisease(t_id, color, already_prop)) {
             return false;
           }
@@ -509,20 +514,27 @@ app.post('/req', function(req, res) {
   }
 
   function getPlayerIdByClassName(cname) {
-    function match_cid(cn) {
-      return cn == cname;
-    }
+    var fi1 = 0;
+    var c_id = -1;
     
-    var c_id = State.Classes.findIndex(match_cid);
+    for(fi1=0; fi1<State.Classes.length; fi1++) {
+      if(State.Classes[fi1] == cname) {
+        c_id = fi1;
+        break;
+      }
+    }
+
     if(c_id < 0) {
       return -1;
     }
     
-    function match(pl) {
-      return pl.pclass == c_id;
+    for(fi1=0; fi1<State.Players.length; fi1++) {
+      if(State.Players[fi1].pclass == c_id) {
+        return fi1;
+      }
     }
     
-    return State.Players.findIndex(match);
+    return -1;
   }
 
   function getPlayerIdByName(pname) {
@@ -573,13 +585,21 @@ app.post('/req', function(req, res) {
                          'setpname',
                          'classinfo',
                          'me',
-                         'misc_clr',
-                         'misc_map',
-                         'misc_rules',
+                         //'misc_clr',   // (client side now)
+                         //'misc_map',   // (client side now)
+                         //'misc_rules', // (client side now)
                          'misc_about'];
-    function match(cmd_name) { return cmd_name == cmd; }
+                         
+    var fi1 = 0;
+    var cmd_found = false;
+    for(fi1=0; fi1<game_cmd_arr.length; fi1++) {
+      if(game_cmd_arr[fi1] == cmd) {
+        cmd_found = true;
+        break;
+      }
+    }
 
-    if(game_cmds_arr.findIndex(match) < 0) {
+    if(!cmd_found) {
       log('Unknown command. Type \'/help\' to see available commands.');
       return;
     }
@@ -624,45 +644,6 @@ app.post('/req', function(req, res) {
       Classinfo(arg1);
     } else if(cmd == 'me' && State.started) {
       Me();
-  //  } else if(cmd == 'misc_clr') {
-  //    document.getElementById('allOutput').innerHTML = "";
-  //  } else if(cmd == 'misc_map') {
-  //    ToggleMap();
-  //  } else if(cmd == 'misc_rules') {
-  //    log('See rules at \'' + RULES_REF + '\'.');
-      //log('This is the legendary \'Pandemic\' board game. Here you and your friends is a group of people, who tries to defeat '
-      //    'four deadly diseases, that are trying to kill the humanity! You are travelling across the Earth to find the remedy for each disease.\n'
-      //    '  The Earth is divided into several cities, that are connected with several roads. There are four diseases (Red, Yellow, Blue and Black), and four city kinds,'
-      //    ' that are in the risk group of the corresponding disease. Color indicators are: \'R\' for Red, \'Y\' for yellow, \'B\' for blue, \'K\' for black. '
-      //    ' So, when infection comes, cities is usually being infected by the disease of their own color.\n'
-      //    '  The game cycle is structured as follows:\n'
-      //    ' 1) Player performs his or her turn;\n'
-      //    ' 2) Player draws two helper cards;\n'
-      //    ' 3) Infection comes;\n'
-      //    'This actions are looped until the end of the game.\n'
-      //    '  There are two decks used in this game:\n'
-      //    ' 1) Helper deck (or, originally, Player deck) - cards, that helps players to defeat the diseases with a little surprise...;'
-      //    ' 2) Infection deck - cards, that identifying cities, that gets additional disease markers;'
-      //    '  Any players can perform these actions:\n'
-      //    ' 1) Move directly to the nearest city, typing \'/drive \'CITY_NAME\'\';'
-      //    ' 2) Move to any city, using \'/fly\' and spend the card of that city;\n'
-      //    ' 3) Move to any city by player\'s choice and spend the card of the city, the player is in at this time - command \'/warp \'DEST_CITY_NAME\'\';\n'
-      //    ' 4) Move from a city with Lab to another city with Lab - command lwarp \'CITY_NAME\';\n'
-      //    ' 5) Give the card of a city, current player stands in, to another player, who stands at the same city; - type \'/cchange <\'PLAYER_NAME\'>\','
-      //    'player name is needed only in case you\'re trying to give the card to one of several players, stood in the current town;\n'
-      //    ' 6) Build a Lab for warping and inventing remedies. Type \'Lab\' to spend card of the current city and build Lab there;'
-      //    ' 7) Heal the disease in the current city. Type \'/heal\' to heal all disease you can in the current city of its own color. '
-      //    'Type \'/heal COLOR_ID\' to heal the disease of another color.'
-      //    ' 8) Invent the remedy from the disease. Type \'/remedy COLOR_ID CARD1_NAME CARD2_NAME\' to invent the remedy from the disease of color COLOR_ID '
-      //    'using five city cards of that color, so you must have them (and extra cards, you specified). Scientist needs only four. '
-      //    'CARDi_NAME - card names, that you DON\'T want to use in the recipe (usually, it\'s enough to determine all cards, you actually want to use, '
-      //    'but if a Scientist has seven cards of one color, the third not used card will be chosen randomly - VERY RARE CASE).'
-          
-      //    '          You should do two common things:\n'
-      //    '1) Heal the disease. Type \'/heal\', while you are in the city with the existing disease to heal, what you can heal of the color, that this city has.'
-      //    'Type \'/heal \'COLOR_ID\'\''
-          
-      //    'See full rules, for example, here: https://images-cdn.zmangames.com/us-east-1/filer_public/25/12/251252dd-1338-4f78-b90d-afe073c72363/zm7101_pandemic_rules.pdf');
     } else if(cmd == 'misc_about') {
       log('Product: Digital Pandemic.');
       log('Version: pre-release 1(v0.2)');
@@ -1037,12 +1018,16 @@ app.post('/req', function(req, res) {
     var pos_dest = getTownIdByName(dest);
     var pos = State.Players[State.cur_player].pos;
 
-    function match(elem) {
-      // searching for card of the corresponding city
-      return elem == pos_dest;
+    var fi1 = 0;
+    var card_index = -1;
+    
+    // searching for card of the corresponding city
+    for(fi1=0; fi1<State.Players[State.cur_player].hand.length; fi1++) {
+      if(State.Players[State.cur_player].hand[fi1] == pos_dest) {
+        card_index = fi1;
+        break;
+      }
     }
-
-    var card_index = State.Players[State.cur_player].hand.findIndex(match);
     
     if(pos_dest < 0) {
       log('Incorrect city name.');
@@ -1079,17 +1064,19 @@ app.post('/req', function(req, res) {
   }
 
   function Warp(arg1, eDest, eCost) {
-    // @TODO: add Engy
-    
     var pos_dest = getTownIdByName(arg1);
     var pos = State.Players[State.cur_player].pos;
     
-    function match(elem) {
-      // searching for card of this city
-      return elem == pos;
-    }
+    var fi1 = 0;
+    var card_index = -1;
     
-    var card_index = State.Players[State.cur_player].hand.findIndex(match);
+    // searching for card of the corresponding city
+    for(fi1=0; fi1<State.Players[State.cur_player].hand.length; fi1++) {
+      if(State.Players[State.cur_player].hand[fi1] == pos) {
+        card_index = fi1;
+        break;
+      }
+    }
     
     if(pos_dest < 0) {
       log('Incorrect city name.');
@@ -1154,21 +1141,23 @@ app.post('/req', function(req, res) {
     } else {
       var action = '';
     
-      function match(c_id) {
-        return c_id == where_id;
-      }
-    
-      function pos_match(pl) {
-        return pl.pos == where_id;
+      var fi1 = 0;
+      var player_in_dest = false;
+      
+      for(fi1=0; fi1<State.Players.length; fi1++) {
+        if(State.Players[fi1].pos == where_id) {
+          player_in_dest = true;
+          break;
+        }
       }
     
       var hand_index = -1;
       var cost_card_id = getCardIdByDispName(cost);
       // choose the cheapest action (maybe with spending a card): move to player, drive, direct or chapter flight
-      if(State.Towns[State.Players[who_id].pos].ways.findIndex(match) >= 0) {
+      if(isTownInWays(where_id, State.Players[who_id].pos)) {
         // Drive
         action = 'Drive';
-      } else if(State.Players.findIndex(pos_match) >= 0) {
+      } else if(player_in_dest) {
         // move to player (Bring)
         action = 'Bring';
       } else {
@@ -1176,16 +1165,18 @@ app.post('/req', function(req, res) {
         var cur_pos = State.Players[who_id].pos;
         var dest_pos = where_id;
         
-        function dir_match(c_id) {
-          return c_id == dest_pos;
-        }
-
-        function cha_match(c_id) {
-          return c_id == cur_pos;
-        }
+        var fi1 = 0;
+        var dir_flight_card_index = -1;
+        var cha_flight_card_index = -1;
         
-        var dir_flight_card_index = State.Players[State.cur_player].hand.findIndex(dir_match);
-        var cha_flight_card_index = State.Players[State.cur_player].hand.findIndex(cha_match);
+        for(fi1=0; fi1<State.Players[State.cur_player].hand.length; fi1++) {
+          if(State.Players[State.cur_player].hand[fi1] == dest_pos) {
+            dir_flight_card_index = fi1;
+          }
+          if(State.Players[State.cur_player].hand[fi1] == cur_pos) {
+            cha_flight_card_index = fi1;
+          }          
+        }
         
         if(dir_flight_card_index < 0 && cha_flight_card_index < 0) {
           // no required card
@@ -1395,11 +1386,16 @@ app.post('/req', function(req, res) {
     var is_engy = State.Classes[State.Players[State.cur_player].pclass] == 'Engineer';
     var city_id_to_remove_lab = getCardIdByDispName(city_name_to_remove_lab);
     
-    function hand_match(c_id) {
-      return c_id == pos;
+    var fi1 = 0;
+    var hand_index = -1;
+    
+    for(fi1=0; fi1<State.Players[State.cur_player].hand.length; fi1++) {
+      if(State.Players[State.cur_player].hand[fi1] == pos) {
+        hand_index = fi1;
+        break;
+      }
     }
     
-    var hand_index = State.Players[State.cur_player].hand.findIndex(hand_match);
     if(State.Towns[pos].lab) {
       log('Already has Lab in this city.');
     } else if(State.labs_count >= State.LABS_MAX) {
@@ -1576,15 +1572,21 @@ app.post('/req', function(req, res) {
     var recipient_id = -1;
     var holder_id = -1;
     
-    function match(cid) {
-      return c_id == cid;
-    }
-    
     // determine holder
     var cindex = -1;
     var i=0;
     for(i=0; i<State.Players.length; i++) {
-      cindex = State.Players[i].hand.findIndex(match);
+    
+      var fi1 = 0;
+      var cindex = -1;
+      
+      for(fi1=0; fi1<State.Players[i].hand.length; fi1++) {
+        if(State.Players[i].hand[fi1] == c_id) {
+          cindex = fi1;
+          break;
+        }
+      }
+    
       if(cindex >= 0) {
         holder_id = i;
         break;
@@ -1663,11 +1665,16 @@ app.post('/req', function(req, res) {
   function Redraw(event_card_name) {
     var card_id = getCardIdByDispName(event_card_name);
 
-    function match(c_id) {
-      return c_id == card_id;
+    var fi1 = 0;
+    var card_index = -1;
+    
+    for(fi1=0; fi1<State.help_drop.length; fi1++) {
+      if(State.help_drop[fi1] == card_id) {
+        card_index = fi1;
+        break;
+      }
     }
     
-    var card_index = State.help_drop.findIndex(match);
     if(getPlayerIdByClassName('Contingency Planner') != State.cur_player) {
       log('Must be Contingency Planner to use this command.');
     } else if(State.cont_planner_card_id != 0) {
@@ -1693,11 +1700,16 @@ app.post('/req', function(req, res) {
   function Migrate(where, card_to_drop_name) {
     var card_id = getCardIdByDispName(card_to_drop_name);
     
-    function hand_match(c_id) {
-      return c_id == card_id;
-    }
+    var fi1 = 0;
+    var hand_card_index = -1;
     
-    var hand_card_index = State.Players[State.cur_player].hand.findIndex(hand_match);
+    for(fi1=0; fi1<State.Players[State.cur_player].hand.length; fi1++) {
+      if(State.Players[State.cur_player].hand[fi1] == card_id) {
+        hand_card_index = fi1;
+        break;
+      }
+    }
+
     var where_id = getCardIdByDispName(where);
     if(getPlayerIdByClassName('Engineer') != State.cur_player) {
       log('Must be Engineer to use this command.');
@@ -1738,20 +1750,20 @@ app.post('/req', function(req, res) {
       var holder_id = -1;
       var hand_index = -1;
       
-      function match(pl) {
-        function hand_match(c_id) {
-          return card_id == c_id;
+      var fi1 = 0;
+      var fi2 = 0;
+      
+      for(fi1=0; fi1<State.Players.length; fi1++) {
+        for(fi2=0; fi2<State.Players[fi1].hand.length; fi2++) {
+          if(State.Players[fi1].hand[fi2] == card_id) {
+            // card found in this player's hand
+            hand_index = fi2;
+            holder_id = fi1;
+            break;
+          }
         }
-        
-        var hi = pl.hand.findIndex(hand_match);
-        if(hi >= 0) {
-          hand_index = hi;
-          return true;
-        }
-        
-        return false;
       }
-      holder_id = State.Players.findIndex(match);
+      
       if(holder_id < 0 && State.cont_planner_card_id == 0) {
         log('Nobody holds that card.');
         return;
@@ -1983,11 +1995,17 @@ app.post('/req', function(req, res) {
       // all classes info
       log('Existing classes:');
     } else {
-      function match(cn) {
-        return cn == c_name;
+    
+      var fi1 = 0;
+      var c_id = -1;
+      
+      for(fi1=0; fi1<State.Classes.length; fi1++) {
+        if(State.Classes[fi1] == c_name) {
+          c_id = fi1;
+          break;
+        }
       }
     
-      var c_id = State.Classes.findIndex(match);
       if(c_id < 0) {
         log('Unknown class name.');
         return;
@@ -2117,19 +2135,19 @@ app.post('/req', function(req, res) {
       var found = false;
       var holder_id = -1, hand_index = -1;
       
-      function match(pl) {
-        function hand_match(c_id) {
-          return card_id == c_id;
+      var fi1 = 0;
+      var fi2 = 0;
+      
+      for(fi1=0; fi1<State.Players.length; fi1++) {
+        for(fi2=0; fi2<State.Players[fi1].hand.length; fi2++) {
+          if(State.Players[fi1].hand[fi2] == card_id) {
+            // card found in this player's hand
+            hand_index = fi2;
+            holder_id = fi1;
+            break;
+          }
         }
-        
-        var index = pl.hand.findIndex(hand_match);
-        if(index >= 0) {
-          hand_index = index;
-          return true;
-        }
-        return false;
       }
-      holder_id = State.Players.findIndex(match);
       
       if(State.cont_planner_card_id == card_id) {
         // Contingency Planner holds in special storage
@@ -2214,11 +2232,16 @@ app.post('/req', function(req, res) {
       
        return res;
     } else if(State.misc_multistep_reason.substr(0,4) == 'PCL ') {
-      function match(pl) {
-        return pl.hand.length > State.HAND_SIZE_MAX;
+      var player_id = -1;      
+      var fi1 = 0;
+      
+      for(fi1=0; fi1<State.Players.length; fi1++) {
+        if(State.Players[fi1].hand.length > State.HAND_SIZE_MAX) {
+          player_id = fi1;
+          break;
+        }
       }
       
-      var player_id = State.Players.findIndex(match);
       if(player_id < 0) {
         log('UERR: nobody has extra cards in hand.');
         return true;
@@ -2233,11 +2256,17 @@ app.post('/req', function(req, res) {
       var i=0;
       for(i=0; i<args.length; i++) {
         var card_id = getCardIdByDispName(args[i]);
-        function card_match(c_id) {
-          return c_id == card_id;
-        }
         
-        var card_index = State.Players[player_id].hand.findIndex(card_match);
+        var card_index = -1;      
+        var fi1 = 0;
+        
+        for(fi1=0; fi1<State.Players[player_id].hand.length; fi1++) {
+          if(State.Players[player_id].hand[fi1] == card_id) {
+            card_index = fi1;
+            break;
+          }
+        }
+
         if(card_index < 0) {
           log('\'' + args[i] + '\': Incorrect card name or player \'' + State.Players[player_id].name + '\' holds no cards with that name.');
           continue;
@@ -2393,11 +2422,15 @@ app.post('/req', function(req, res) {
   function Immunity(card_to_remove) {
     var card_id = getCardIdByDispName(card_to_remove);
     
-    function match(cid) {
-      return card_id == cid;
-    }
+    var card_index = -1;      
+    var fi1 = 0;
     
-    var card_index = State.infect_drop.findIndex(match);
+    for(fi1=0; fi1<State.infect_drop.length; fi1++) {
+      if(State.infect_drop[fi1] == card_id) {
+        card_index = fi1;
+        break;
+      }
+    }
     
     if(card_id < 0) {
       log('Incorrect city name.');
@@ -2417,12 +2450,18 @@ app.post('/req', function(req, res) {
 
   function CheckExtraCardsInHands() {
     // some player hit the card limit - he or she must drop extra card(s)
-    function match(pl) {
-      return pl.hand.length > State.HAND_SIZE_MAX;
+    
+    var player_id = -1;
+    var fi1 = 0;
+    
+    // find one of players, which have hit the card limit
+    for(fi1=0; fi1<State.Players.length; fi1++) {
+      if(State.Players[fi1].hand.length > State.HAND_SIZE_MAX) {
+        player_id = fi1;
+        break;
+      }
     }
 
-    // one of players, which have hit the card limit
-    var player_id = State.Players.findIndex(match);
     if(player_id < 0) {
       // all players has good number of cards in their hands - end the command
       return true;
