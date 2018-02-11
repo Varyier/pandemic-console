@@ -200,9 +200,13 @@ var State = {
 // /remedy 'X' 'NAME1', 'NAME2' - invent the remedy from the specified disease 'X', using two cards 'NAME1', 'NAME2'
 // /turn - end the turn
 
+var MAIN = {
+
 function getRndInteger(min, max) {
   return Math.floor(Math.random() * (max - min) ) + min;
 }
+
+};
 
 var port = process.env.PORT || 5000;       
 //var port = 5000;
