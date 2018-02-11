@@ -2672,6 +2672,7 @@ app.post('/req', function(req, res) {
     //});
   }
   
+  console.log('C_GCD: ' + q.gcd + ', S_GCD: ' + State.misc_gcd);
   if(q.gcd != undefined && q.gcd < State.misc_gcd) {
     // add history to let all users see
     // actions, performed by all other users
