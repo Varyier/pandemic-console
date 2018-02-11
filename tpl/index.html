@@ -83,6 +83,7 @@
       if(arg != '' && arg.charAt(0) == '!') {
         t.ec = true;
         t.v = arg.slice(1);
+        arg = arg.slice(1);
       } else { 
         t.v = arg;
       }
