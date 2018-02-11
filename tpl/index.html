@@ -61,7 +61,7 @@
     
     if(istrt == '') {
        return false;
-    } else if(!ParseCommandString(input_str, tokens)) {
+    } else if(!ParseCommandString(istrt, tokens)) {
       return false;
     }
     
@@ -124,6 +124,8 @@
       }
     }
     
+    // DEBUG
+    log('_REQ: ' + req_str);
     return true;
   }
   
