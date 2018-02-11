@@ -28,7 +28,8 @@ app.get('/standalone', function(req, res){
 //    return res.end();
 //});
 
-var Ans = [];
+var Ans = '';
+var History = [];
 
 // -----------------------------------------------------------------
 // Application itself
@@ -172,7 +173,10 @@ var State = {
 //  misc_prev_commands:[],
 //  misc_prev_command_index:0,
   misc_multistep_request:false,
-  misc_multistep_reason:''
+  misc_multistep_reason:'',
+  MISC_HIST_MAX:100000,
+  misc_gcd:1,
+  misc_nospread:false
 };
 
 // COMMANDS:
@@ -207,8 +211,6 @@ var State = {
 
 
 app.post('/req', function(req, res) {
-  //var storage_path = 'public/doc/State.json'
-  
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   function getRndInteger(min, max) {
     return Math.floor(Math.random() * (max - min) ) + min;
@@ -546,17 +548,23 @@ app.post('/req', function(req, res) {
   }
 
   function log(str) {
-      //var output = document.getElementById('allOutput');
-      //var o_val = output.value;
-      //output.innerHTML = o_val + '\n' + str;
-      //output.scrollTop = output.scrollHeight;
-      Ans.push(str);
+      if(Ans != '') {
+        Ans += '\n';
+      }
+      Ans += str;
+      
+      if(!State.misc_nospread) {
+        while(History.length < State.misc_gcd) {
+          History.push('');
+        }
+        History[History.length-1] = Ans;
+      }
   }
 
   function process_main() {
-    //var RULES_REF = 'http://v-prj0.herokuapp.com/doc/rules.pdf';
     var THIS_SITE = 'http://v-prj0.herokuapp.com/';
 
+    misc_nospread = false;
     var cmd = req_st.command;
     var arg1 = req_st.arg1;
     var arg2 = req_st.arg2;
@@ -597,17 +605,25 @@ app.post('/req', function(req, res) {
     }
 
     if(!cmd_found) {
+      State.misc_nospread = true;
       log('Unknown command. Type \'/help\' to see available commands.');
       return;
     }
     
     if(cmd == 'help') {
+      State.misc_nospread = true;
       Help();
     } else if(cmd == 'start') {
+      // reset history
+      //Ans = [{}];
+      State.misc_gcd = 1;
+      History = [];
       Init(arg1, arg2);
     } else if(cmd == 'ways' && State.started) {
+      State.misc_nospread = true;
       Ways(arg1);
     } else if(cmd == 'where' && State.started) {
+      State.misc_nospread = true;
       Where();
     } else if(cmd == 'drive' && State.started) {
       Drive(arg1);
@@ -634,14 +650,18 @@ app.post('/req', function(req, res) {
     } else if(cmd == 'use' && State.started) {
       Use(arg1);
     } else if(cmd == 'info' && State.started) {
+      State.misc_nospread = true;
       Info(arg1);
     } else if(cmd == 'setpname' && State.started) {
       Setpname(arg1, arg2);
     } else if(cmd == 'classinfo') {
+      State.misc_nospread = true;
       Classinfo(arg1);
     } else if(cmd == 'me' && State.started) {
+      State.misc_nospread = true;
       Me();
     } else if(cmd == 'misc_about') {
+      State.misc_nospread = true;
       log('Product: Digital Pandemic.');
       log('Version: pre-release 1(v0.2)');
       log('Author: Varyier');
@@ -650,7 +670,12 @@ app.post('/req', function(req, res) {
       log('Date(first version): 09.02.2018');
       log('Date(release): -');
     } else if(!State.started) {
+      State.misc_nospread = true;
       log('Start the game first.');
+    }
+    
+    if(!State.misc_nospread) {
+      State.misc_gcd = (State.misc_gcd+1) % State.MISC_GCD_MAX;
     }
   }
 
@@ -2553,7 +2578,11 @@ app.post('/req', function(req, res) {
   }
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
-  Ans = [];
+  //
+  // body
+  //
+  
+  Ans = '';
 
   var req_st = {
     command:'',
@@ -2643,17 +2672,51 @@ app.post('/req', function(req, res) {
     //});
   }
   
-  var ans_str = '';
-  var i=0;
-  for(i=0; i<Ans.length; i++) {
-    ans_str += Ans[i];
-    if(i<Ans.length-1) {
-      ans_str += '\n';
+  if(q.gcd != undefined) {
+    // add history to let all users see
+    // actions, performed by all other users
+    var i=0;
+    var str = '';
+    
+    for(i=q.gcd; i<History.length; i++) {
+      str += History[i];
+      if(i<History.length-1) {
+        str += '\n';
+      }
     }
+    
+    Ans = str;
   }
+
+  var ans_json = {gcd:-1, text:''};
+  ans_json.gcd = State.misc_gcd;
+  ans_json.text = Ans;
   
   res.writeHead(200, {});
-  res.write(ans_str);
+  res.write(JSON.stringify(ans_json));
+  return res.end();
+});
+
+app.post('/gcd', function(req, res) {
+  var q = url.parse(req.url, true).query;
+  var str = '';
+  
+  if(q.v != undefined) {
+    var i=0;
+    for(i=q.v; i<History.length; i++) {
+      str += History[i];
+      if(i < History.length-1) {
+        str += '\n';
+      }
+    }
+  }
+
+  var ans_json = {gcd:-1, text:''};
+  ans_json.gcd = State.misc_gcd;
+  ans_json.text = str;
+  
+  res.writeHead(200, {});
+  res.write(JSON.stringify(ans_json));
   return res.end();
 });
 
