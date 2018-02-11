@@ -2673,7 +2673,7 @@ app.post('/req', function(req, res) {
   }
   
   if(q.gcd != undefined && q.gcd < State.misc_gcd) {
-    console.log('###LENGTH: ' History.length);
+    console.log('###LENGTH: ' + History.length);
     console.log(History);
     // add history to let all users see
     // actions, performed by all other users
