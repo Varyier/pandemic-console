@@ -208,9 +208,6 @@ var State = {
 
 app.post('/req', function(req, res) {
   //var storage_path = 'public/doc/State.json'
-
-  // DEBUG
-  console.log('REQQQ!');
   
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   function getRndInteger(min, max) {
@@ -670,9 +667,6 @@ app.post('/req', function(req, res) {
   }
 
   function Init(pcnt, skill) {
-    // DEBUG
-    console.log('GAME STARTED');
-  
     State.started = false;
 
     // choose player count
