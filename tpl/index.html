@@ -23,9 +23,6 @@
       if (this.readyState == 4 && this.status == 200) {
           log(this.responseText);
       }
-      
-      // DEBUG
-      log(this.readyState);
     };
     
     // server request
@@ -57,8 +54,8 @@
      ts:[ { v:'', ec:false } ],
      cmd:''
     };
-    remote_req_st.t = [];
-    remote_req_st.is_st_cmd = false;
+    remote_req_st.ts = [];
+    remote_req_st.cmd = '';
     
     if(istrt == '') {
        return false;
@@ -72,8 +69,7 @@
     
     var si=0;
     if(tokens[0].indexOf('/') == 0) {
-      tokens[0] = tokens[0].slice(1);
-      cmd = tokens[0].slice(1);
+      remote_req_st.cmd = tokens[0].slice(1);
       si = 1;
     }
     
@@ -96,7 +92,7 @@
         return false;
       }
       
-      remote_req_st.push(t);
+      remote_req_st.ts.push(t);
     }
     
     // convert to url-like string
@@ -107,19 +103,19 @@
       asym = true;
     }
     
-    if(remote_req_st.length > 0) {
+    if(remote_req_st.ls.length > 0) {
       if(asym) { req_str += '&'; }
-      req_str += ('l=' + remote_req_st.length);
+      req_str += ('l=' + remote_req_st.ls.length);
     }
     
     var i=0;
-    for(i=0; i<remote_req_st.length; i++) {
+    for(i=0; i<remote_req_st.ls.length; i++) {
       if(remote_req_st[i].v != '') {
         if(asym) { req_str += '&'; }
-        req_str += ('t' + (i+1) + '=' + remote_req_st[i].v);
+        req_str += ('t' + (i+1) + '=' + remote_req_st.ls[i].v);
       }
       
-      if(remote_req_st[i].ec) {
+      if(remote_req_st.ls[i].ec) {
         if(asym) { req_str += '&'; }
         req_str += ('ec' + (i+1) + '=true');
       }
