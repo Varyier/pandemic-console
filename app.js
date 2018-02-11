@@ -174,7 +174,7 @@ var State = {
 //  misc_prev_command_index:0,
   misc_multistep_request:false,
   misc_multistep_reason:'',
-  MISC_HIST_MAX:100000,
+  MISC_GCD_MAX:100000,
   misc_gcd:1,
   misc_nospread:false
 };
