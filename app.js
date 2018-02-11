@@ -554,9 +554,6 @@ app.post('/req', function(req, res) {
       Ans += str;
       
       if(!State.misc_nospread) {
-        while(History.length < State.misc_gcd) {
-          History.push('');
-        }
         History[History.length-1] = Ans;
       }
   }
@@ -610,6 +607,7 @@ app.post('/req', function(req, res) {
       return;
     }
     
+    History.push('');
     if(cmd == 'help') {
       State.misc_nospread = true;
       Help();
@@ -618,6 +616,7 @@ app.post('/req', function(req, res) {
       //Ans = [{}];
       State.misc_gcd = 1;
       History = [];
+      History.push('');
       Init(arg1, arg2);
     } else if(cmd == 'ways' && State.started) {
       State.misc_nospread = true;
@@ -676,6 +675,8 @@ app.post('/req', function(req, res) {
     
     if(cmd != 'start' && !State.misc_nospread) {
       State.misc_gcd = (State.misc_gcd+1) % State.MISC_GCD_MAX;
+    } else if(cmd != 'start') {
+      History.pop();
     }
   }
 
@@ -2128,6 +2129,9 @@ app.post('/req', function(req, res) {
 
   // for multistep request ('/use' command or card drop)
   function process_tail() {
+    History.push('');
+    State.misc_gcd = (State.misc_gcd+1) % State.MISC_GCD_MAX;
+  
     // for Prediction only - wait for fully processed
     var res = !(((State.misc_multistep_reason.substr(0,4) == 'USE ') &&
                  (State.misc_multistep_reason.substring(4) == '!Prediction')) ||
@@ -2673,8 +2677,6 @@ app.post('/req', function(req, res) {
   }
   
   if(q.gcd != undefined && q.gcd < State.misc_gcd) {
-    console.log('###LENGTH: ' + History.length);
-    console.log(History);
     // add history to let all users see
     // actions, performed by all other users
     var i=0;
