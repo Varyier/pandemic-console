@@ -4,6 +4,8 @@
     misc_prev_command_index:0,
   };
 
+  var req_str = '';
+  
   function mymain() {
     i_val = document.getElementById('mainInput').value;
     document.getElementById('mainInput').value = '';
@@ -27,8 +29,7 @@
     };
     
     // server request
-    var req_str = '';
-    if(!MakeRequest(i_val, req_str)) {
+    if(!MakeRequest(i_val)) {
       return;
     }
     
@@ -36,7 +37,7 @@
     log('req_made');
     log('REQ: ' + req_str);
     
-    if(ProcessLocal(i_val, req_str)) {
+    if(ProcessLocal(i_val)) {
       return;
     }
 
@@ -47,7 +48,7 @@
     xhttp.send();
   }
   
-  function MakeRequest(input_str, req_str) {
+  function MakeRequest(input_str) {
     var istrt = input_str.trim();
     var tokens = [];
     req_str = '';
@@ -129,7 +130,7 @@
     return true;
   }
   
-  function ProcessLocal(req, req_str) {
+  function ProcessLocal(req) {
     var RULES_REF = 'http://v-prj0.herokuapp.com/doc/rules.pdf';
     
     if(req_str.indexOf('cmd=misc_clr') >= 0) {
