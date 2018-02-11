@@ -592,8 +592,8 @@ app.post('/req', function(req, res) {
                          
     var fi1 = 0;
     var cmd_found = false;
-    for(fi1=0; fi1<game_cmd_arr.length; fi1++) {
-      if(game_cmd_arr[fi1] == cmd) {
+    for(fi1=0; fi1<game_cmds_arr.length; fi1++) {
+      if(game_cmds_arr[fi1] == cmd) {
         cmd_found = true;
         break;
       }
