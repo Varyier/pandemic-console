@@ -9,9 +9,7 @@
   var gcd_update_interval_id = setInterval(UpdateGcdAsync, 2000);
   
   function mymain() {
-    if(gcd_update_interval_id < 0) {
-      clearInterval(gcd_update_interval_id);
-    }
+    clearInterval(gcd_update_interval_id);
   
     i_val = document.getElementById('mainInput').value;
     document.getElementById('mainInput').value = '';
