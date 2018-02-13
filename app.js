@@ -175,9 +175,9 @@ var State = {
   misc_multistep_request:false,
   misc_multistep_reason:'',
   
-  MISC_GCD_MAX:100000,
-  misc_gcd:0,
-  misc_gcd_start:0,
+  MISC_GAME_ID_MAX:100000,
+  misc_game_id:1,
+  misc_action_id:0,
   misc_nospread:false
 };
 
@@ -614,12 +614,9 @@ app.post('/req', function(req, res) {
       State.misc_nospread = true;
       Help();
     } else if(cmd == 'start') {
-      // for first start
-      if(State.misc_gcd == 0) {
-        State.misc_gcd = 1;
-      }
+      State.misc_game_id++;
+      State.misc_action_id = 0;
       // reset history
-      State.misc_gcd_start = State.misc_gcd;
       History = [];
       History.push('');
       Init(arg1, arg2);
@@ -678,9 +675,9 @@ app.post('/req', function(req, res) {
       log('Start the game first.');
     }
     
-    if(cmd != 'start' && !State.misc_nospread) {
-      State.misc_gcd = (State.misc_gcd+1) % State.MISC_GCD_MAX;
-    } else if(cmd != 'start') {
+    if(!State.misc_nospread) {
+      State.misc_action_id++;
+    } else {
       History.pop();
     }
   }
@@ -2135,7 +2132,7 @@ app.post('/req', function(req, res) {
   // for multistep request ('/use' command or card drop)
   function process_tail() {
     History.push('');
-    State.misc_gcd = (State.misc_gcd+1) % State.MISC_GCD_MAX;
+    State.misc_action_id++;
   
     // for Prediction only - wait for fully processed
     var res = !(((State.misc_multistep_reason.substr(0,4) == 'USE ') &&
@@ -2681,33 +2678,30 @@ app.post('/req', function(req, res) {
     //});
   }
   
-  if(q.gcd != undefined && q.gcd < State.misc_gcd) {
+  var qtres = State.misc_nospread ? State.misc_action_id : (State.misc_action_id-1);
+  if((q.gid != undefined && q.gid < State.misc_gid) || (q.hl != undefined && q.hl < qtres)) {
     // add history to let all users see
     // actions, performed by all other users
     var i=0;
     var str = '';
     
-    var s_id = (q.gcd + State.MISC_GCD_MAX - State.misc_gcd_start);
-    if(s_id < 0) {
-      s_id = 0;
+    var s_id = 0;
+    if(q.gid != undefined && q.gid == State.misc_gid) {
+      s_id = q.hl;
     }
-    s_id %= State.MISC_GCD_MAX;
-    for(i=s_id; i<History.length-1; i++) {
+    for(i=s_id; i<History.length; i++) {
       str += History[i];
-      if(i<History.length-2) {
+      if(i<History.length-1) {
         str += '\n';
       }
     }
     
-    if(Ans == '') {
-      Ans = str;
-    } else if(str != '') {
-      Ans = str + '\n' + Ans;
-    }
+    Ans = str;
   }
 
-  var ans_json = {gcd:-1, text:''};
-  ans_json.gcd = State.misc_gcd;
+  var ans_json = {game_id:-1, history_length:-1, text:''};
+  ans_json.game_id = State.misc_game_id;
+  ans_json.history_length = State.misc_action_id;
   ans_json.text = Ans;
   
   res.writeHead(200, {});
@@ -2719,24 +2713,26 @@ app.post('/gcd', function(req, res) {
   var q = url.parse(req.url, true).query;
   var str = '';
 
-  if(q.v != undefined && q.v < State.misc_gcd) {
+  if((q.gid != undefined && q.gid < State.misc_gid) || (q.hl != undefined && q.hl < State.misc_action_id)) {
+    // add history to let all users see
+    // actions, performed by all other users
     var i=0;
     
-    var s_id = (q.v + State.MISC_GCD_MAX - State.misc_gcd_start);
-    if(s_id < 0) {
-      s_id = 0;
+    var s_id = 0;
+    if(q.gid != undefined && q.gid == State.misc_gid) {
+      s_id = q.hl;
     }
-    s_id %= State.MISC_GCD_MAX;
     for(i=s_id; i<History.length; i++) {
       str += History[i];
-      if(i < History.length-1) {
+      if(i<History.length-1) {
         str += '\n';
       }
     }
   }
-
-  var ans_json = {gcd:-1, text:''};
-  ans_json.gcd = State.misc_gcd;
+  
+  var ans_json = {game_id:-1, history_length:-1, text:''};
+  ans_json.game_id = State.misc_game_id;
+  ans_json.history_length = State.misc_action_id;
   ans_json.text = str;
   
   res.writeHead(200, {});

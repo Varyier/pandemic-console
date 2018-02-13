@@ -2,7 +2,8 @@
   var LocalState = {
     misc_prev_commands:[],
     misc_prev_command_index:0,
-    misc_gcd:0
+    misc_game_id:0,
+    misc_history_length:0
   };
 
   var req_str = '';
@@ -28,7 +29,8 @@
           if(this.status == 200) {
             var res_json = JSON.parse(this.responseText);
             log(res_json.text);
-            LocalState.misc_gcd = res_json.gcd;
+            LocalState.misc_game_id = res_json.game_id;
+            LocalState.misc_history_length = res_json.history_length;
           }
           
           gcd_update_interval_id = setInterval(UpdateGcdAsync, 2000);
@@ -130,7 +132,7 @@
     
     // add generation code
     if(asym) { req_str += '&'; }
-    req_str += ('gcd=' + LocalState.misc_gcd);
+    req_str += ('gid=' + LocalState.misc_game_id + "&hl=" + LocalState.misc_history_length);
     asym = true;
     
     return true;
@@ -161,14 +163,15 @@
     xhttp.onreadystatechange = function() {
       if (this.readyState == 4 && this.status == 200) {
           var res_json = JSON.parse(this.responseText);
-          if(LocalState.misc_gcd < res_json.gcd) {
-            log(res_json.text);
-            LocalState.misc_gcd = res_json.gcd;
+          if(LocalState.misc_game_id != res_json.game_id || LocalState.misc_history_length != res_json.text) {
+            log(res_json.history);
+            LocalState.misc_game_id = res_json.game_id;
+            LocalState.misc_history_length = res_json.history_length;
           }
       }
     };
     
-    xhttp.open('POST', 'gcd?v=' + LocalState.misc_gcd, true);
+    xhttp.open('POST', 'gcd?gid=' + LocalState.misc_game_id + "&hl=" + LocalState.misc_history_length, true);
     xhttp.send();
   }
  
