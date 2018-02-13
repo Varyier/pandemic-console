@@ -2714,14 +2714,14 @@ app.post('/gcd', function(req, res) {
   var q = url.parse(req.url, true).query;
   var str = '';
 
-  if((q.gid != undefined && q.gid < State.misc_gid) || (q.hl != undefined && q.hl < State.misc_action_id)) {
-    console.log('gid = ' + q.gid + ', cgid = ' + State.misc_gid + ', hl = ' + q.hl + 'chl = ' + State.misc_action_id + ';');
+  if((q.gid != undefined && q.gid < State.misc_game_id) || (q.hl != undefined && q.hl < State.misc_action_id)) {
+    console.log('gid = ' + q.gid + ', cgid = ' + State.misc_game_id + ', hl = ' + q.hl + 'chl = ' + State.misc_action_id + ';');
     // add history to let all users see
     // actions, performed by all other users
     var i=0;
     
     var s_id = 0;
-    if(q.gid != undefined && q.gid == State.misc_gid) {
+    if(q.gid != undefined && q.gid == State.misc_game_id) {
       if(q.hl != undefined) {
         s_id = q.hl;
       }
