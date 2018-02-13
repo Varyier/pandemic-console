@@ -176,8 +176,8 @@ var State = {
   misc_multistep_reason:'',
   
   MISC_GCD_MAX:100000,
-  misc_gcd:1,
-  misc_gcd_start:1,
+  misc_gcd:0,
+  misc_gcd_start:0,
   misc_nospread:false
 };
 
@@ -614,6 +614,10 @@ app.post('/req', function(req, res) {
       State.misc_nospread = true;
       Help();
     } else if(cmd == 'start') {
+      // for first start
+      if(State.misc_gcd == 0) {
+        State.misc_gcd = 1;
+      }
       // reset history
       State.misc_gcd_start = State.misc_gcd;
       History = [];
