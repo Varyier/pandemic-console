@@ -163,8 +163,8 @@
     xhttp.onreadystatechange = function() {
       if (this.readyState == 4 && this.status == 200) {
           var res_json = JSON.parse(this.responseText);
-          if(LocalState.misc_game_id != res_json.game_id || LocalState.misc_history_length != res_json.text) {
-            log(res_json.history);
+          if(LocalState.misc_game_id != res_json.game_id || LocalState.misc_history_length != res_json.history_length) {
+            log(res_json.text);
             LocalState.misc_game_id = res_json.game_id;
             LocalState.misc_history_length = res_json.history_length;
           }
