@@ -664,12 +664,12 @@ app.post('/req', function(req, res) {
     } else if(cmd == 'misc_about') {
       State.misc_nospread = true;
       log('Product: Digital Pandemic.');
-      log('Version: pre-release 1(v0.2)');
+      log('Version: pre-release 2 final');
       log('Author: Varyier');
       log('E-mail: attervip@yandex.ru');
       log('Location site: ' + THIS_SITE);
       log('Date(first version): 09.02.2018');
-      log('Date(release): -');
+      log('Date(release): 13.02.2018');
     } else if(!State.started) {
       State.misc_nospread = true;
       log('Start the game first.');
