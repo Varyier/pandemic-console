@@ -2131,9 +2131,6 @@ app.post('/req', function(req, res) {
 
   // for multistep request ('/use' command or card drop)
   function process_tail() {
-    History.push('');
-    State.misc_action_id++;
-  
     // for Prediction only - wait for fully processed
     var res = !(((State.misc_multistep_reason.substr(0,4) == 'USE ') &&
                  (State.misc_multistep_reason.substring(4) == '!Prediction')) ||
@@ -2661,9 +2658,11 @@ app.post('/req', function(req, res) {
     
     if(State.misc_multistep_request) {
       //log('Input command arguments:');
+      History.push('');
       if(process_tail()) {
         State.misc_multistep_request = false;
       }
+      State.misc_action_id++;
     } else {
       
       // process one step (command)
