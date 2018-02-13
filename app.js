@@ -174,8 +174,10 @@ var State = {
 //  misc_prev_command_index:0,
   misc_multistep_request:false,
   misc_multistep_reason:'',
+  
   MISC_GCD_MAX:100000,
   misc_gcd:1,
+  misc_gcd_start:1,
   misc_nospread:false
 };
 
@@ -613,8 +615,7 @@ app.post('/req', function(req, res) {
       Help();
     } else if(cmd == 'start') {
       // reset history
-      //Ans = [{}];
-      State.misc_gcd = 1;
+      State.misc_gcd_start = State.misc_gcd;
       History = [];
       History.push('');
       Init(arg1, arg2);
@@ -2682,7 +2683,12 @@ app.post('/req', function(req, res) {
     var i=0;
     var str = '';
     
-    for(i=q.gcd; i<History.length-1; i++) {
+    var s_id = (q.gcd + State.MISC_GCD_MAX - State.misc_gcd_start);
+    if(s_id < 0) {
+      s_id = 0;
+    }
+    s_id %= State.MISC_GCD_MAX;
+    for(i=s_id; i<History.length-1; i++) {
       str += History[i];
       if(i<History.length-2) {
         str += '\n';
@@ -2708,10 +2714,16 @@ app.post('/req', function(req, res) {
 app.post('/gcd', function(req, res) {
   var q = url.parse(req.url, true).query;
   var str = '';
-  
+
   if(q.v != undefined && q.v < State.misc_gcd) {
     var i=0;
-    for(i=q.v; i<History.length; i++) {
+    
+    var s_id = (q.v + State.MISC_GCD_MAX - State.misc_gcd_start);
+    if(s_id < 0) {
+      s_id = 0;
+    }
+    s_id %= State.MISC_GCD_MAX;
+    for(i=s_id; i<History.length; i++) {
       str += History[i];
       if(i < History.length-1) {
         str += '\n';
