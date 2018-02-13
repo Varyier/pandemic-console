@@ -563,7 +563,7 @@ app.post('/req', function(req, res) {
   function process_main() {
     var THIS_SITE = 'http://v-prj0.herokuapp.com/';
 
-    misc_nospread = false;
+    State.misc_nospread = false;
     var cmd = req_st.command;
     var arg1 = req_st.arg1;
     var arg2 = req_st.arg2;
