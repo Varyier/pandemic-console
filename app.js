@@ -2678,26 +2678,28 @@ app.post('/req', function(req, res) {
     //});
   }
   
-  var qtres = State.misc_nospread ? State.misc_action_id : (State.misc_action_id-1);
-  if((q.gid != undefined && q.gid < State.misc_gid) || (q.hl != undefined && q.hl < qtres)) {
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //var qtres = State.misc_nospread ? State.misc_action_id : (State.misc_action_id-1);
+  //if((q.gid != undefined && q.gid < State.misc_gid) || (q.hl != undefined && q.hl < qtres)) {
     // add history to let all users see
     // actions, performed by all other users
-    var i=0;
-    var str = '';
+  //  var i=0;
+  //  var str = '';
     
-    var s_id = 0;
-    if(q.gid != undefined && q.gid == State.misc_gid) {
-      s_id = q.hl;
-    }
-    for(i=s_id; i<History.length; i++) {
-      str += History[i];
-      if(i<History.length-1) {
-        str += '\n';
-      }
-    }
+  //  var s_id = 0;
+  //  if(q.gid != undefined && q.gid == State.misc_gid) {
+  //    s_id = q.hl;
+  //  }
+  //  for(i=s_id; i<History.length; i++) {
+  //    str += History[i];
+  //    if(i<History.length-1) {
+  //      str += '\n';
+  //    }
+  //  }
     
-    Ans = str;
-  }
+  //  Ans = str;
+  //}
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   var ans_json = {game_id:-1, history_length:-1, text:''};
   ans_json.game_id = State.misc_game_id;
