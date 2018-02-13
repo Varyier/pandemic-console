@@ -176,7 +176,7 @@ var State = {
   misc_multistep_reason:'',
   
   MISC_GAME_ID_MAX:100000,
-  misc_game_id:1,
+  misc_game_id:0,
   misc_action_id:0,
   misc_nospread:false
 };
