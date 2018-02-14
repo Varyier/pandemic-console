@@ -576,6 +576,7 @@ app.post('/req', function(req, res) {
                          'drive',
                          'fly',
                          'warp',
+                         'tunnel',
                          'move',
                          'turn',
                          'heal',
@@ -632,6 +633,8 @@ app.post('/req', function(req, res) {
       Fly(arg1);
     } else if(cmd == 'warp' && State.started) {
       Warp(arg1, arg2, arg3);
+    } else if(cmd == 'tunnel' && State.started) {
+      Tunnel(arg1);
     } else if(cmd == 'move' && State.started) {
       Move(arg1, arg2, arg3);
     } else if(cmd == 'turn' && State.started) {
@@ -664,7 +667,7 @@ app.post('/req', function(req, res) {
     } else if(cmd == 'misc_about') {
       State.misc_nospread = true;
       log('Product: Digital Pandemic.');
-      log('Version: pre-release 2 final');
+      log('Version: pre-release 2.1');
       log('Author: Varyier');
       log('E-mail: attervip@yandex.ru');
       log('Location site: ' + THIS_SITE);
@@ -1134,6 +1137,38 @@ app.post('/req', function(req, res) {
     }
   }
 
+  function Tunnel(dest_city_name) {
+    var pos_dest = getTownIdByName(dest_city_name);
+    var pos = State.Players[State.cur_player].pos;
+    
+    if(pos_dest < 0) {
+      log('Incorrect city name.');
+    } else if(pos == pos_dest) {
+      log('Choose a city, other that the current one.');
+    } else if(State.Players[State.cur_player].acts <= 0) {
+      log('No actions left.');
+    } else if(!(State.Towns[pos].lab && State.Towns[pos_dest].lab)) {
+      log('Need Lab in both current city and destination city.');
+    } else {
+      State.Players[State.cur_player].acts--;
+      State.Players[State.cur_player].pos = pos_dest;
+      
+      var str = 'Player';
+      str += ' \'';
+      str += State.Players[State.cur_player].name;
+      str += '\'';
+      str += ' is now in';
+      str += ' \'';
+      str += State.Towns[State.Players[State.cur_player].pos].name;
+      str += '\'';
+      str += ';';
+      log(str);
+      
+      log('Actions left: ' + State.Players[State.cur_player].acts + '.');
+      AutoHeal();
+    }
+  }
+  
   function Move(who, where, cost) {
     var who_id = getPlayerIdByName(who);
     
@@ -1179,6 +1214,9 @@ app.post('/req', function(req, res) {
       if(isTownInWays(where_id, State.Players[who_id].pos)) {
         // Drive
         action = 'Drive';
+      } else if(State.Towns[where_id].lab && State.Towns[State.Players[who_id].pos].lab) {
+        // move by tunnel
+        action = 'Tunnel';
       } else if(player_in_dest) {
         // move to player (Bring)
         action = 'Bring';
@@ -2556,28 +2594,35 @@ app.post('/req', function(req, res) {
     log('Available commands:');
     log('/help - display available commands (this message);');
     log('/start [players_number] [skill] - starts new game, [players_number] - \'2\', \'3\', \'4\' or empty, [skill] - \'easy\', \'medium\', \'heroic\' or empty;');
-    log('/ways - available cities for the current player to drive to;');
-    log('/drive \'CITY_NAME\' - current player moves to the city next to that player\'s pos;');
-    log('/heal <\'COLOR_LETTER\'> - current player heals disease of color, defined by COLOR_LETTER (B for Blue, K - for Black, R - for Red, Y - for yellow), without COLOR_LETTER - disease of the city\'s color;');
-    log('/turn - end of turn, next player takes turn;');
-    log('/fly \'CITY_NAME\' - current player moves to the CITY_NAME, using the card of that city;');
-    log('/warp \'CITY_NAME\' - current player moves to any city, using the card of the city that player stands in right now;');
-    log('/move [who] [where_city_or_player] [cost] - (Dispatcher only) moves a player [who] to the city, using Drive, Direct or Chapter flight or to another player (Bring). Chooses the cheapest option. Cost (city card name) specifies, which flight to choose if can perform both.');
-    log('/lab [city_name_to_remove_lab] - build a Lab in the current city. Discard the current city card, if not Engineer. Need to specify a city to remove lab from, if labs count exceeded.');
-    log('/remedy \'COLOR_LETTER\' \'EXCLUDE_CARD1\' \'EXCLUDE_CARD2\' - current player invents the remedy in a city with the lab from disease of color indicated by COLOR_LETTER, using cards, excluding EXCLUDE_CARD1 and EXCLUDE_CARD2;');
-    log('/cchange - current player takes or gives the card of the city that player stands in to another player, that stands in that city;');
-    log('/redraw - (for Contingency Planner) take an Event card from the Help deck drop to use it again.');
-    log('/migrate [dest_city] [city_card_to_drop] - (for Engineer) once per turn move to any city by discarding any city card.');
-    log('/use [event_card_name] - use an Event card name, anybody holds right now');
-    log('/info [key] - gives detailed game info. Type \'/info keys\' for all available keys.');
-    log('/classinfo [class_name] - information about abilities of classes. Type with empty [class_name] to know the abilities of your class or ([class_name] == all) to know about all classes.');
-    log('/me - detailed info about the current player.');
+    log('/ways <[city_name]> - available cities for the current player to drive to, or available cities to drive to from the [city_name];');
+    log('/where - displays position of all players;')
+    log('/drive [dest_city_name] - current player moves to the city next to that player\'s pos;');
+    log('/heal <[color_letter]> - current player heals disease of color, defined by [color_letter] (\'B\' for Blue, \'K\' - for Black, \'R\' - for Red, \'Y\' - for yellow), without [color_letter] - disease of the city\'s color;');
+    log('/turn - end of turn, next player takes the turn;');
+    log('/fly [dest_city_name] - current player moves to the [dest_city_name], using the card of that city;');
+    log('/warp [dest_city_name] - current player moves to [dest_city_name], using the card of the current city;');
+    log('/tunnel [dest_city_name] - current player moves to [dest_city_name] with Lab, from a city with Lab;')
+    log('/move [who] [where_city_or_player] [cost] - (Dispatcher only) moves a player [who] to the city, using Drive, Direct or Chapter flight or to another player (Bring), or Lab-to-Lab tunneling. Chooses the cheapest option. [cost] (city card name) specifies, which flight to choose if can perform both;');
+    log('/lab [city_name_to_remove_lab] - build a Lab in the current city. Discard the current city card, if not Engineer. Need to specify a city to remove lab from, if labs count exceeded;');
+    log('/remedy [color_letter] <[card_to_exclude1]> <[card_to_exclude2]> - current player invents the remedy in a city with the lab from disease of color indicated by [color_letter], using cards, excluding [card_to_exclude1] and [card_to_exclude2], if specified;');
+    log('/cchange [player_name/card_name] [city_name] - current player excanges a card [city_name] with [player_name]:');
+    log('  - /cmd - give the card of the current city to a player (relevant, if only current player and one other player stand in the city),');
+    log('  - /cmd [player_name] - give the card of the current city to [player_name],');
+    log('  - /cmd [city_name] - (Researcher only) - give the card [city_name] to a player,');
+    log('  - /cmd [city_name] [player_name] - (Researcher only) - give the card [city_name] to player [player_name];');
+    log('/redraw - (Contingency Planner only) take an Event card from the Help deck drop to use it again;');
+    log('/migrate [dest_city] [city_card_to_drop] - (Engineer only) once per turn move to any city by discarding any city card;');
+    log('/use [event_card_name] - use an Event card name, anybody holds right now;');
+    log('/info [key] - gives detailed game info. Type \'/info keys\' for all available keys;');
+    log('/classinfo [class_name] - information about abilities of classes. Type with empty [class_name] to know the abilities of your class or ([class_name] == all) to know about all classes;');
+    log('/me - detailed info about the current player;');
     
     log('/setpname [p_id] [p_name] - sets name of the player [p_id] (counting from the first player, first player is number 1) by the [p_name], that cannot be name of the other player or city;');
-    log('/misc_clr - clears the screen.');
-    log('/misc_map - makes map visible or not.');
-    log('/misc_rules - game rules.');
-    log('/misc_about - readme.');
+    log('/misc_clr - clears the screen;');
+    log('/misc_map - makes map visible or not;');
+    log('/misc_rules - game rules;');
+    log('/misc_about - readme;');
+    log('(please, respect the register, and don\'t use extra spaces between tokens).');
   }
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
