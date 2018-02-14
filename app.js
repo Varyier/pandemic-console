@@ -452,7 +452,7 @@ app.post('/req', function(req, res) {
     str += ' \'';
     str += State.Towns[t_id].name;
     str += '\'';
-    str += 'is infected by ';
+    str += ' is infected by ';
     var bfirst = true;
     if(State.Towns[t_id].disB > 0) {
       str += '\'B\' - ';
